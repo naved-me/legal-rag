@@ -13,6 +13,8 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
 - `ingest.py`: Parses the PDFs, splits the text into chunks, creates embeddings, and saves them to the local Chroma database.
 - `chat.py`: The main RAG retrieval chain. Takes user questions, retrieves relevant chunks from Chroma, and asks the LLM to generate an answer.
 - `evaluate.py`: An automated testing script that grades the chatbot's answers to ensure they don't hallucinate.
+- `api.py`: A FastAPI web server that provides a `/ask` endpoint with conversational memory.
+- `static/`: Contains the premium Vanilla JS web interface.
 - `plan.md`: The roadmap and architecture phases for the project.
 - `learn.md`: A learning log of architectural decisions and concepts.
 
@@ -42,13 +44,20 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
    python ingest.py
    ```
 
-5. **Chat with the Bot**
-   Run the chat script to ask questions (you can change the hardcoded question at the bottom of the file):
+5. **Run the Web Application (Recommended)**
+   Launch the FastAPI web server to use the graphical chat interface:
+   ```powershell
+   uvicorn api:app --reload
+   ```
+   Then open `http://localhost:8000/` in your web browser.
+
+6. **Chat via Terminal (Alternative)**
+   Run the chat script directly to use the terminal interface:
    ```powershell
    python chat.py
    ```
 
-6. **Run the Evaluator**
+7. **Run the Evaluator**
    Run the test script to ensure the bot is generating faithful answers:
    ```powershell
    python evaluate.py
