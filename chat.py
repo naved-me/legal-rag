@@ -17,11 +17,12 @@ from operator import itemgetter
 
 CHROMA_PATH = "chroma_db"
 
-def query_rag(question: str, history: list = None):
+def query_rag(question: str, history: list = None, api_mode: bool = False):
     if history is None:
         history = []
         
-    print("Loading database...")
+    if not api_mode:
+        print("Loading database...")
     # 1. Load the exact same embedding model we used during ingestion
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
@@ -72,15 +73,17 @@ def query_rag(question: str, history: list = None):
     ).assign(answer=rag_chain_from_docs)
     
     # 7. Ask the Question!
-    print(f"\nThinking about: '{question}'...")
+    if not api_mode:
+        print(f"\nThinking about: '{question}'...")
     response = rag_chain_with_source.invoke({"input": question, "history": history})
     
-    print("\n--- Answer ---")
-    print(response["answer"])
-    
-    print("\n--- Sources Used ---")
-    for doc in response["context"]:
-        print(f"- From Page: {doc.metadata.get('page')}")
+    if not api_mode:
+        print("\n--- Answer ---")
+        print(response["answer"])
+        
+        print("\n--- Sources Used ---")
+        for doc in response["context"]:
+            print(f"- From Page: {doc.metadata.get('page')}")
         
     history.extend([
         HumanMessage(content=question),
