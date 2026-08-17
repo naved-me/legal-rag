@@ -51,6 +51,28 @@ def query_rag(question: str, history: list = None, api_mode: bool = False):
         ("human", "{input}"),
     ])
     
+    # 5a. Query Rewriter
+    contextualize_q_system_prompt = (
+        "Given a chat history and the latest user question, "
+        "formulate a standalone question which can be understood without the chat history. "
+        "Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
+    )
+    contextualize_q_prompt = ChatPromptTemplate.from_messages([
+        ("system", contextualize_q_system_prompt),
+        MessagesPlaceholder("history"),
+        ("human", "{input}"),
+    ])
+    
+    # This chain returns a String (the standalone question)
+    query_rewriter = contextualize_q_prompt | llm | StrOutputParser()
+    
+    # We create a new retriever that routes the inputs through the query rewriter first
+    history_aware_retriever = (
+        RunnablePassthrough.assign(standalone_question=query_rewriter)
+        | itemgetter("standalone_question")
+        | retriever
+    )
+    
     # 6. Build the RAG Chain using modern LCEL
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
@@ -66,7 +88,7 @@ def query_rag(question: str, history: list = None, api_mode: bool = False):
     # Then, a main chain that runs the retriever and saves the sources
     rag_chain_with_source = RunnableParallel(
         {
-            "context": itemgetter("input") | retriever,
+            "context": history_aware_retriever,
             "input": itemgetter("input"),
             "history": itemgetter("history")
         }
