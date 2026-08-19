@@ -102,5 +102,21 @@
         "source_context": "sub-section notwithstanding that no appeal would lie against the conviction as a result of which such \norder of disqualification was made. \n21. Suspension of dr iving licence in certain cases .—(1) Where, in relation to a person who had \nbeen previously convicted of an offence punishable under section 184, a case is registered by a police \nofficer on the allegation that such person has, by such dangerous driving as is referred to in the said \nsection 184, of any class or description of motor vehicle caused the death of, or grievous hurt to, one or",
         "chunk_id": "1df95eb7ddd2",
         "page": 19.0
+    },
+    {
+        "id": 14,
+        "question": "According to Section 142(a), what specific injuries involving permanent privation are listed as constituting permanent disablement?",
+        "ground_truth": "permanent privation of the sight of either eye or the hearing of either ear, or priva tion of any member or joint",
+        "source_context": "142. Permanent disablement.—For the purposes of this Chapter, permanent disablement of a person \nshall be deemed to have resulted from an accident of the nature referred to in sub -section ( 1) of \nsection 140 if such person has suffered by reason of the accident, any injury or injuries involving— \n(a) permanent privation of the sight of either eye or the hearing of either ear, or priva tion of any \nmember or joint; or \n(b) destruction or permanent impairing of the powers of any member or joint; or \n(c) permanent disfiguration of the head or face. \n143. Applicability of Chapter to certain claims under Act 8 o f 1923 .—The provisions of this \nChapter shall also apply in relation to any claim for compensation in respect of death or permanent \ndisablement of any person under the Workmen’s Compensation Act, 1923 resulting from an accident of \nthe nature referred to in sub-section (1) of section 140 and for this purpose, the said provisions shall, with \nnecessary modifications, be deemed to form part of that Act.",
+        "chunk_id": "cd0af1bd7bac",
+        "page": 74.0
+    },
+    {
+        "id": 15,
+        "question": "According to Section 62, which authority must the police furnish information regarding stolen and recovered motor vehicles to?",
+        "ground_truth": "State Transport Authority",
+        "source_context": "47. Assignment of new registration mark on removal to another State. \n48. No objection certificate. \n49. Change of residence or place of business. \n50. Transfer of ownership. \n51. Special provisions regarding motor vehicle subject to hire-purchase agreement, etc. \n52. Alteration in motor vehicle. \n53. Suspension of registration. \n54. Cancellation of registration suspended under section 53. \n55. Cancellation of registration. \n56. Certificate of fitness of transport vehicles. \n57. Appeals. \n58. Special provisions in regard to transport vehicles. \n59. Power to fix the age limit of motor vehicle. \n60. Registration of vehicles belonging to the Central Government. \n61. Application of Chapter to trailers. \n62. Information regarding stolen and recovered motor vehicles to be furnished by the police to the \nState Transport Authority. \n63. Maintenance of State Registers of Motor Vehicles. \n64. Power of Central Government to make rules. \n65. Power of State Government to make rules. \n \n \nCHAPTER V \nCONTROL OF TRANSPORT VEHICLES \n66. Necessity for permits.",
+        "chunk_id": "02c78f967834",
+        "page": 2.0
     }
 ]
