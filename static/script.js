@@ -4,9 +4,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesWrapper = document.getElementById('chat-messages');
     const sendBtn = document.getElementById('send-btn');
     const newChatBtn = document.getElementById('new-chat-btn');
+    const apiKeyInput = document.getElementById('api-key-input');
 
     // Store the session ID to maintain conversational memory
     let currentSessionId = null;
+
+    // API key (optional) persisted locally; sent as Authorization: Bearer <key>
+    const savedKey = localStorage.getItem('apiKey') || '';
+    if (apiKeyInput) apiKeyInput.value = savedKey;
+    if (apiKeyInput) {
+        apiKeyInput.addEventListener('change', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) localStorage.setItem('apiKey', key);
+            else localStorage.removeItem('apiKey');
+        });
+    }
+
+    // Escape untrusted text before inserting into the DOM (prevents XSS).
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
 
     // Scroll to the bottom of the chat
     function scrollToBottom() {
@@ -17,18 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessage(text, isUser, sources = []) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-        
+
         let avatar = isUser ? 'ME' : 'AI';
-        
-        let contentHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-        
+
+        let contentHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
+
         // If there are sources, add them as tags below the text
         if (sources.length > 0) {
             contentHTML += `<div class="sources"><strong>Sources:</strong><br>`;
             // Extract unique pages
             const pages = [...new Set(sources.map(s => s.page))].filter(p => p !== 0);
             pages.forEach(p => {
-                contentHTML += `<span class="source-tag">Page ${p}</span>`;
+                contentHTML += `<span class="source-tag">Page ${escapeHtml(p)}</span>`;
             });
             contentHTML += `</div>`;
         }
@@ -39,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${contentHTML}
             </div>
         `;
-        
+
         messagesWrapper.appendChild(messageDiv);
         scrollToBottom();
     }
@@ -74,17 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle form submission
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const question = userInput.value.trim();
         if (!question) return;
 
         // 1. Display user message
         addMessage(question, true);
-        
+
         // 2. Clear input & disable button
         userInput.value = '';
         sendBtn.disabled = true;
-        
+
         // 3. Show loading indicator
         showLoading();
 
@@ -95,11 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 payload.session_id = currentSessionId;
             }
 
+            const headers = { 'Content-Type': 'application/json' };
+            const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '') || localStorage.getItem('apiKey') || '';
+            if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
             const response = await fetch('/ask', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify(payload)
             });
 
@@ -108,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            
+
             // Save the session ID so the server remembers us next time
             currentSessionId = data.session_id;
 

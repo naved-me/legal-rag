@@ -4,16 +4,21 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
 
 ## Features
 - **Offline Embeddings**: Uses HuggingFace (`all-MiniLM-L6-v2`) to generate document embeddings completely locally.
-- **Vector Database**: Uses ChromaDB to store and retrieve text vectors locally.
-- **Fast Cloud LLM**: Uses Groq (Llama-3.1-8b-instant) for blazing-fast answer generation.
+- **Vector Database**: Uses a single ChromaDB collection (`legal-docs`) to store and retrieve text vectors locally.
+- **Fast Cloud LLM**: Uses Groq (`qwen/qwen3.6-27b`, reasoning disabled) for fast, clean fact-based answer generation.
 - **LCEL Architecture**: Built using modern LangChain Expression Language for clean, readable pipelines.
-- **Mathematical Evaluation**: Includes a custom LLM-as-a-Judge script to mathematically score the bot on Faithfulness and Answer Relevance.
+- **Evaluation**: An LLM-as-a-Judge script scores the bot on answer accuracy and reports retrieval metrics (hit-rate@k, MRR) over a regenerable benchmark.
+- **Re-ranking**: A cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) re-ranks the top-25 embedding candidates to deliver the final top-6 context, with a confidence gate that refuses low-confidence questions.
 
 ## Project Files
 - `ingest.py`: Parses the PDFs, splits the text into chunks, creates embeddings, and saves them to the local Chroma database.
 - `chat.py`: The main RAG retrieval chain. Takes user questions, retrieves relevant chunks from Chroma, and asks the LLM to generate an answer.
 - `evaluate.py`: An automated testing script that grades the chatbot's answers to ensure they don't hallucinate.
-- `api.py`: A FastAPI web server that provides a `/ask` endpoint with conversational memory.
+- `retrieval_check.py`: Offline (zero-token) retrieval evaluation — hit-rate@k and MRR.
+- `generate_testset.py`: Regenerates the grounded `benchmark.json` from document chunks.
+- `benchmark_utils.py`: Shared benchmark loading + gold-hit helpers used by the eval scripts.
+- `api.py`: A FastAPI web server that provides a `/ask` endpoint with conversational memory (SQLite-backed sessions, auth, rate limiting).
+- `tests/`: Pytest suite covering the API, ingestion, and retrieval helpers.
 - `static/`: Contains the premium Vanilla JS web interface.
 - `plan.md`: The roadmap and architecture phases for the project.
 - `learn.md`: A learning log of architectural decisions and concepts.
@@ -43,6 +48,11 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
    ```powershell
    python ingest.py
    ```
+   Re-ingesting appends by default; pass `--reset` to rebuild cleanly:
+   ```powershell
+   python ingest.py --reset
+   ```
+   Preview extraction/chunking without writing with `--dry-run`.
 
 5. **Run the Web Application (Recommended)**
    Launch the FastAPI web server to use the graphical chat interface:
@@ -57,8 +67,56 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
    python chat.py
    ```
 
-7. **Run the Evaluator**
-   Run the test script to ensure the bot is generating faithful answers:
+7. **Benchmark & Evaluate**
+   Regenerate the test set (grounded in the actual document, 15 questions):
+   ```powershell
+   python generate_testset.py --seed 42
+   ```
+   Then run the evaluator:
    ```powershell
    python evaluate.py
    ```
+   The report shows answer accuracy (LLM-judged), retrieval hit-rate@6, and MRR.
+
+   Quick offline retrieval check (zero LLM tokens — good for CI):
+   ```powershell
+   python retrieval_check.py
+   ```
+
+8. **Run the tests**
+   ```powershell
+   python -m pytest -q
+   ```
+
+## Configuration (optional `.env` overrides)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `API_KEYS` | empty | Comma-separated keys. Empty = auth disabled. Send via `Authorization: Bearer <key>`. |
+| `RATE_LIMIT` | `20/minute` | Per-client request limit on `/ask`. |
+| `MAX_SESSIONS` | `1000` | Bounds the session store (oldest evicted). |
+| `MAX_HISTORY_TURNS` | `6` | Chat turns retained per session. |
+| `SESSION_DB` | `sessions.db` | SQLite file backing the session store (survives restarts). |
+| `ALLOWED_ORIGINS` | `*` | Comma-separated CORS origins. |
+| `RETRIEVAL_K` | `6` | Final context chunks passed to the LLM. |
+| `RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder used to re-rank candidates. |
+| `RERANK_FETCH_K` | `25` | Candidates pulled (vector + BM25, fused by RRF) before re-ranking. |
+| `RERANK_MIN_SCORE` | `1.0` | Re-ranker score for a chunk to enter context. |
+| `RERANK_HARD_FLOOR` | `-2.0` | Below this, even the best chunk is refused. |
+| `CHUNK_SIZE` / `CHUNK_OVERLAP` | `1100` / `200` | Ingestion chunking. |
+| `MIN_CHUNK_CHARS` | `60` | Chunks shorter than this are dropped at ingest. |
+| `JUDGE_MODEL` | `qwen/qwen3.6-27b` | Judge model used by `evaluate.py` (set different from `LLM_MODEL` to reduce self-judging bias). |
+| `JUDGE_VOTES` | `1` | How many judge calls per question (majority verdict). |
+| `JUDGE_SLEEP` | `2` | Seconds between benchmark items (avoids rate limits). |
+| `NUM_QUESTIONS` | `15` | Questions generated by `generate_testset.py`. |
+
+## Deployment (Docker)
+
+```powershell
+docker build --build-arg HF_TOKEN=hf_xxx -t legal-rag .
+docker run -p 8000:8000 --env-file .env legal-rag
+```
+
+The `chroma_db/` index is built inside the image at build time. CI (GitHub Actions) runs
+`ingest.py` + `pytest` + `retrieval_check.py` on every PR, and a full `evaluate.py` run on a
+daily schedule (needs a `GROQ_API_KEY` repo secret).

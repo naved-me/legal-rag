@@ -1,0 +1,122 @@
+[
+    {
+        "id": 1,
+        "question": "According to section 6(1), what are the specific exceptions that allow a person holding a driving licence to hold another driving licence?",
+        "ground_truth": "A learner’s licence or a driving licence issued in accordance with the provisions of section 18 or a document authorising, in accordance with the rules made under section 139, the person specified therein to drive a motor vehicle.",
+        "source_context": ". 6. Restrictions on the holding of driving licences.—(1) No person shall, while he holds any driving licence for the time being in force, hold any other driving licence except a learner ’s licence or a driving licence issued in accordance with the provisions of secti on 18 or a document authorising, in accordance with the rules made under section 139, the person specified therein to drive a motor vehicle. (2) No holder of a driving licence or a learner’s licence shall permit it to be used by any other person. (3) Nothing in this section shall prevent a licensing authority having the jurisdiction referred to in sub-section (1) of section 9 from adding to the classes of vehicles which the driving licence authorises the holder to drive. 7",
+        "chunk_id": "6aa88c920630",
+        "page": 12
+    },
+    {
+        "id": 2,
+        "question": "According to the text, who is deemed to have committed an offence under sub-section (1) or sub-section (2)?",
+        "ground_truth": "Whoever attempts to commit any of the acts referred to in sub-section (1) or sub-section (2) in relation to any motor vehicle, or abets the commission of any such act",
+        "source_context": ". (3) Whoever attempts to commit any of the acts referred to in sub -section (1) or sub -section (2) in relation to any motor vehicle, or abets the commission of any such act, shall also be deemed to have committed an offence under sub-section (1) or, as the case may be, sub-section (2). 1. Subs. by Act 54 of 1994, s. 57, for sub-section (1) (w.e.f. 14-11-1994).",
+        "chunk_id": "cfd059d35577",
+        "page": 91
+    },
+    {
+        "id": 3,
+        "question": "What is the maximum fine prescribed for an importer or dealer who sells, delivers, or alters a motor vehicle or trailer in a condition that contravenes Chapter VII or any rule made thereunder?",
+        "ground_truth": "five hundred rupees",
+        "source_context": ". 191. Sale of vehicle in or alteration of vehicle to c ondition contravening this Act .—Whoever being an importer of or dealer in motor vehicles, sells or delivers or offers to sell or deliver a motor vehicle or traller in such condition that the use thereof in a public place would be in contravention of Chapter VII or any rule made thereunder or alters the motor vehicle or trailer s o as to render its condition such that its use in a public place would be in contravention of Chapter VII or any rule made thereunder shall be punishable with fine which may extend to five hundred rupees: Provided that no person shall be convicted under this section if he proves that he had reasonable cause to believe that the vehicle would not be used in a public place until it had been put into a condition in which it might lawfully be so used. 1[192",
+        "chunk_id": "910fac9a9252",
+        "page": 90
+    },
+    {
+        "id": 4,
+        "question": "According to the text, within how many days from the date of publication in the Official Gazette may any person file objections to a proposal regarding a scheme before the State Government?",
+        "ground_truth": "thirty days",
+        "source_context": ". 2[(2) Notwithstanding anything contained in sub -section (1), when a proposal is published under that sub-section, then from the date of publication of such proposal, no permit shall be granted to any person, except a temporary permit du ring the pendency of the proposal and such temporary permit shall be valid only for a period of one year from the date of its issue of till the date of final publication of the scheme under section 100, whichever is earlier.] 100. Objection to the proposal .—(1) On the publication of any proposal regarding a scheme in the Official Gazette and in not less than one newspaper in the regional language circulating in the area or route which is to be covered by such proposal any person may, within thirty days from the date of its publication in the Official Gazette, file objections to it before the State Government",
+        "chunk_id": "09800eb012c6",
+        "page": 61
+    },
+    {
+        "id": 5,
+        "question": "According to Section 179(2), what is the maximum term of imprisonment for a person who wilfully withholds required information or gives false information under the Act?",
+        "ground_truth": "one month",
+        "source_context": "88 (b) in any other case, be punishable with fine which may extend to two hundred rupees. 179. Disobedience of orders, obstruct ion and refusal of information .—(1) Whoever wilfully disobeys any direction lawfully given by any person or authority empowered under this Act to give such direction, or obstructs any person or authority in the discharge of any functions which such person or authority is required or empowered under this Act to discharge, shall, if no other penalty is provided for the offence be punishable with fine which may extend to five hundred rupees. (2) Whoever, being required by or under this Act to supply any informatio n, wilfully withholds such information or gives information which he knows to be false or which he does not believe to be true, shall, if no other penalty is provided for the offence, be punishable with imprisonment for a term which may extend to one month, or with fine which may extend to five hundred rupees, or with both. 180",
+        "chunk_id": "580d5bdedef7",
+        "page": 88
+    },
+    {
+        "id": 6,
+        "question": "According to the text, what must the registering authority do with the registration mark before returning the certificate of registration to the applicant?",
+        "ground_truth": "enter the mark upon the certificate of registration",
+        "source_context": ". (2) The regi stering authority, to which application is made under sub -section (1), shall after making such verification, as it thinks fit, of the returns, if any, received under section 62, assign the vehicle a registration mark as specified in sub-section (6) of section 41 to be displayed and shown thereafter on the vehicle and shall enter the mark upon the certificate of registration before returning it to the applicant and shall, in communication with the registering authority by whom the vehicle was previously regi stered, arrange for the transfer of the registration of the vehicle from the records of that registering authority to its own records",
+        "chunk_id": "b148e88ed188",
+        "page": 29
+    },
+    {
+        "id": 7,
+        "question": "According to the text, what is the minimum population threshold for a town for the State Government to direct authorities to limit the number of contract carriages operating on city routes?",
+        "ground_truth": "not less than five lakhs",
+        "source_context": ". (3) (a) The State Government shall, if so directed by the Central Government, having regard to the number of vehicles, road conditions and other relevant matters, by notification in the Official Gazette, direct a State Transport Authority and a Regional Transport Authority to limit the number of contract carriages generally or of any specified type, as may be fixed and specified in the notification, operating on city routes in towns with a population of not less than five lakhs",
+        "chunk_id": "f50acc1342aa",
+        "page": 47
+    },
+    {
+        "id": 8,
+        "question": "According to the text, what condition must be met before the appropriate Government can make an order exempting a vehicle owned by a local authority or State transport undertaking from the operation of sub-section (1)?",
+        "ground_truth": "A fund has been established and is maintained by that authority in accordance with the rules made in that behalf under this Act for meeting any liability arising out of the use of any vehicle of that authority which that authority or any person in its employment may incur to third parties.",
+        "source_context": ". (2) Sub -section ( 1) shall not apply to any vehicle owned by the Central Government or a State Government and used for Government purposes unconnected with any commercial enterprise. (3) The appropriate Government may, by order, exempt from the operation of sub -section ( 1) any vehicle owned by any of the following authorities, namely:— (a) the Central Government or a State Government, if the vehicle is used for Government purposes connected with any commercial enterprise; (b) any local authority; (c) any State transport undertaking: Provided that no such order shall be made in relation to any such authority unless a fund has been established and is maintained by that authority in accordance with the rules made in that behalf under this Act for meeting any liability arising out of the use of any vehicle of that authority which that authorit y or any person in its employment may incur to third parties",
+        "chunk_id": "47c9f1a40e40",
+        "page": 75
+    },
+    {
+        "id": 9,
+        "question": "According to the text, what must the Regional Transport Authority assign to a vehicle when a special permit is granted?",
+        "ground_truth": "a special distinguishing mark in the form and manner specified by the Central Government",
+        "source_context": ". (8) Notwithstanding anything contained in sub -section (1), but subject to any rules that may be made under this Act by the Central Government, the Regional Transport Authority of any one region or, as the case may be, the State Transpo rt Authority, may, for the convenience of the public, 1[grant a special permit to any public service vehicle including any vehicle covered] by a permit issued under section 72 (including a reserve stage carriage) or under section 74 or under sub -section ( 9) of this section for carrying a passenger or passengers for hire or reward under a contract, express or implied, for the use of the vehicle as a whole without stopping to pick up or set down along the line of route passengers not included in the contract, and in every case where such special permit is granted, the Regional Transport Authority shall assign to the vehicle, for display thereon, a special distinguishing mark in the form and manner specified by the Central Government and such special permit shall be valid in any other region or State without the countersignature of the Regional",
+        "chunk_id": "d07c44cfa709",
+        "page": 55
+    },
+    {
+        "id": 10,
+        "question": "According to the provided text, what specific condition must be met for a person holding a vehicle under a hire-purchase agreement to make any alteration to the vehicle?",
+        "ground_truth": "The person must have the written consent of the registered owner.",
+        "source_context": ". (4) A registering authority other than the original registering authority making any such entry shall communicate the details of the entry to the original registering authority. (5) Subject to the provisions made under sub-sections (1), (2), (3) and (4), no person holding a vehicle under a hire-purchase agreement shall make any alteration to the vehicle except with the written c onsent of the registered owner. Explanation.—For the purposes of this section, “alteration” means a change in the structure of a vehicle which results in a change in its basic feature.] 53",
+        "chunk_id": "00b2b5264be1",
+        "page": 34
+    },
+    {
+        "id": 11,
+        "question": "According to subsection (3), what specific immunity shall no rule made under this section confer on any person in any State?",
+        "ground_truth": "immunity in any State from the payment of any tax levied in that State on motor vehicles or their users",
+        "source_context": "73 (h) the identification of the drivers and conductors of such motor vehicles; (i) the replacement of the travelling passes, certificates or authorisations, permits, licences or any other prescribed documents lost or defaced, on payment of such fee as may be prescribed; (j) the exemption from the provisions of such laws as relate to customs, police or health with a view to facilitate such road transport services; (k) any other matter which is to be, or may be, prescribed. (3) No rule made under th is section shall operate to confer on any person any immunity in any State from the payment of any tax levied in that State on motor vehicles or their users",
+        "chunk_id": "75a98aa64deb",
+        "page": 73
+    },
+    {
+        "id": 12,
+        "question": "Under what condition may a police officer in uniform arrest a person without a warrant for an offence under the Act, according to the provided text?",
+        "ground_truth": "if such person refuses to give his name and address",
+        "source_context": "93 1[(2) A police officer in uniform may arrest without warrant any person, who has committed an offence under this Act, if such person refuses to give his name and address.] (3) A police officer arresting without warrant the driver of a motor vehicle shall if the circumstances so require take or cause to be taken any steps he may consider proper for the tem porary disposal of the vehicle. 203",
+        "chunk_id": "9bc7884daafe",
+        "page": 93
+    },
+    {
+        "id": 13,
+        "question": "Within how many days must a motor vehicle owner intimate their new address to the registering authority after ceasing to reside or have their place of business at the address recorded in the certificate of registration?",
+        "ground_truth": "thirty days",
+        "source_context": ". Change of residence or place of business.—(1) If the owner of a motor vehicle ceases to reside or have his place of business at the address recorded in the certificate of registration of the vehicle, he shall, within thirty days of any such change of address, intimate in such form accompanied by suc h documents as may be prescribed by the Central Government, his new address, to the registering authority by which the certificate of registration was issued, or, if the new address is within the jurisdiction of another registering authority, to that other registering authority, and shall at the same time forward the certificate of registration to the registering authority or, as the case may be, to the other registering authority in order that the new address may be entered therein",
+        "chunk_id": "4cddc61869d7",
+        "page": 30
+    },
+    {
+        "id": 14,
+        "question": "According to the text, what must the owner of a vehicle do forthwith after a registering authority communicates in writing that the registration has been cancelled?",
+        "ground_truth": "surrender to that authority the certificate of registration of the vehicle",
+        "source_context": ". (6) A registering authority cancelling the registration of a motor vehicle under section 54 or under this section shall communicate such fact in writing to the owner of the vehicle, and the owner of the vehicle shall forthwith surrender to that authority the certificate of registration of the vehicle. (7) A registering authority making an order of cancellatio n under section 54 or under this section shall, if it is the original registering authority, cancel the certificate of registration and the entry relating to the vehicle in its records, and, if it is not the original registering authority, forward the cert ificate of",
+        "chunk_id": "298e32072fa0",
+        "page": 35
+    },
+    {
+        "id": 15,
+        "question": "Within what timeframe must an owner report to the registering authority if a motor vehicle has been destroyed or rendered permanently incapable of use?",
+        "ground_truth": "within fourteen days or as soon as may be",
+        "source_context": ". 55. Cancellation of registration .—(1) If a motor vehicle has been destroyed or has been rendered permanently incapable of use, the owner shall, within fourteen days or as soon as may be, report the fact to the registering authority within whose jurisdiction he has the residence or place of b usiness where the vehicle is normally kept, as the case may be, and shall forward to that authority the certificate of registration of the vehicle. (2) The registering authority shall, if it is the original registering authority, cancel the registration an d the certificate of registration, or, if it is not, shall forward the report and the certificate of registration to the original registering authority and that authority shall cancel the registration",
+        "chunk_id": "4f59a018e10d",
+        "page": 35
+    }
+]
