@@ -1,18 +1,18 @@
 # Motor Legal Chatbot (RAG System)
 
-A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions about Motor Laws. It extracts text from local PDF documents, stores them in a local vector database, and uses a cloud-based LLM (Groq) to provide factually accurate, hallucination-free legal answers.
+A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions about Motor Laws. It extracts text from local PDF documents, stores them in a Pinecone vector index, and uses a cloud-based LLM (Groq) to provide factually accurate, hallucination-free legal answers.
 
 ## Features
 - **Offline Embeddings**: Uses HuggingFace (`all-MiniLM-L6-v2`) to generate document embeddings completely locally.
-- **Vector Database**: Uses a single ChromaDB collection (`legal-docs`) to store and retrieve text vectors locally.
+- **Vector Database**: Uses a Pinecone serverless index (`legal-rag`) for cloud-hosted vector storage and retrieval.
 - **Fast Cloud LLM**: Uses Groq (`qwen/qwen3.6-27b`, reasoning disabled) for fast, clean fact-based answer generation.
 - **LCEL Architecture**: Built using modern LangChain Expression Language for clean, readable pipelines.
 - **Evaluation**: An LLM-as-a-Judge script scores the bot on answer accuracy and reports retrieval metrics (hit-rate@k, MRR) over a regenerable benchmark.
 - **Re-ranking**: A cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) re-ranks the top-25 embedding candidates to deliver the final top-6 context, with a confidence gate that refuses low-confidence questions.
 
 ## Project Files
-- `ingest.py`: Parses the PDFs, splits the text into chunks, creates embeddings, and saves them to the local Chroma database.
-- `chat.py`: The main RAG retrieval chain. Takes user questions, retrieves relevant chunks from Chroma, and asks the LLM to generate an answer.
+- `ingest.py`: Parses the PDFs, splits the text into chunks, creates embeddings, and upserts them to the Pinecone index.
+- `chat.py`: The main RAG retrieval chain. Takes user questions, retrieves relevant chunks from Pinecone, and asks the LLM to generate an answer.
 - `evaluate.py`: An automated testing script that grades the chatbot's answers to ensure they don't hallucinate.
 - `retrieval_check.py`: Offline (zero-token) retrieval evaluation — hit-rate@k and MRR.
 - `generate_testset.py`: Regenerates the grounded `benchmark.json` from document chunks.
@@ -38,17 +38,18 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
 
 3. **Configure API Keys**
    - Create a file named `.env` in the root folder.
-   - Add your Groq API key:
+   - Add your Groq and Pinecone API keys:
      ```env
      GROQ_API_KEY=gsk_your_api_key_here
+     PINECONE_API_KEY=pcsk_your_api_key_here
      ```
 
 4. **Ingest the Data**
-   Run the ingestion script to build the local database:
+   Run the ingestion script. It creates the Pinecone index automatically if it doesn't exist:
    ```powershell
    python ingest.py
    ```
-   Re-ingesting appends by default; pass `--reset` to rebuild cleanly:
+   Re-ingesting upserts by chunk id (idempotent, no duplicates); pass `--reset` to wipe existing vectors first:
    ```powershell
    python ingest.py --reset
    ```
@@ -98,10 +99,14 @@ A Retrieval-Augmented Generation (RAG) chatbot designed to answer questions abou
 | `MAX_HISTORY_TURNS` | `6` | Chat turns retained per session. |
 | `SESSION_DB` | `sessions.db` | SQLite file backing the session store (survives restarts). |
 | `ALLOWED_ORIGINS` | `*` | Comma-separated CORS origins. |
+| `PINECONE_INDEX_NAME` | `legal-rag` | Pinecone index name (auto-created at ingest). |
+| `PINECONE_CLOUD` / `PINECONE_REGION` | `aws` / `us-east-1` | Serverless index placement. |
+| `PINECONE_DIMENSION` | `384` | Vector dimension (must match the embedding model). |
+| `PINECONE_METRIC` | `cosine` | Similarity metric for the index. |
 | `RETRIEVAL_K` | `6` | Final context chunks passed to the LLM. |
 | `RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder used to re-rank candidates. |
 | `RERANK_FETCH_K` | `25` | Candidates pulled (vector + BM25, fused by RRF) before re-ranking. |
-| `RERANK_MIN_SCORE` | `1.0` | Re-ranker score for a chunk to enter context. |
+| `RERANK_MIN_SCORE` | `-1.0` | Re-ranker score for a chunk to enter context. |
 | `RERANK_HARD_FLOOR` | `-2.0` | Below this, even the best chunk is refused. |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `1100` / `200` | Ingestion chunking. |
 | `MIN_CHUNK_CHARS` | `60` | Chunks shorter than this are dropped at ingest. |
@@ -117,4 +122,6 @@ docker build --build-arg HF_TOKEN=hf_xxx -t legal-rag .
 docker run -p 8000:8000 --env-file .env legal-rag
 ```
 
-The `chroma_db/` index is built inside the image at build time.
+Vectors live in the Pinecone cloud index, so containers don't hold index data — they just need
+`PINECONE_API_KEY` (and `GROQ_API_KEY`) at runtime. Run `python ingest.py --reset` once locally
+(or from any container) to populate the index before first use.

@@ -1,122 +1,106 @@
 [
     {
         "id": 1,
-        "question": "According to section 6(1), what are the specific exceptions that allow a person holding a driving licence to hold another driving licence?",
-        "ground_truth": "A learner’s licence or a driving licence issued in accordance with the provisions of section 18 or a document authorising, in accordance with the rules made under section 139, the person specified therein to drive a motor vehicle.",
-        "source_context": ". 6. Restrictions on the holding of driving licences.—(1) No person shall, while he holds any driving licence for the time being in force, hold any other driving licence except a learner ’s licence or a driving licence issued in accordance with the provisions of secti on 18 or a document authorising, in accordance with the rules made under section 139, the person specified therein to drive a motor vehicle. (2) No holder of a driving licence or a learner’s licence shall permit it to be used by any other person. (3) Nothing in this section shall prevent a licensing authority having the jurisdiction referred to in sub-section (1) of section 9 from adding to the classes of vehicles which the driving licence authorises the holder to drive. 7",
-        "chunk_id": "6aa88c920630",
-        "page": 12
+        "question": "According to Section 198, what is the maximum fine prescribed for a person who, without lawful authority or reasonable excuse, enters or mounts any stationary motor vehicle or tampers with its brake or mechanism?",
+        "ground_truth": "one hundred rupees",
+        "source_context": "92 \n \n198. Unauthorised interference with vehicle .—Whoever otherwise than with lawful authority or \nreasonable execuse enters or mounts any stationary motor vehicle or tampers with the brake or any part of \nthe mechanism of a motor vehicle shall be punishable with fine which may extend to one hundred rupees. \n199. Offences by companies .—(1) Where an offence under this Act has been committed by a \ncompany, every person who at the time the offence was committed, was in charge of, and was responsible \nto, the company, for the conduct of the business of the company, as well as the company, shall be deemed \nto be guilty of the contravention and shall be liable to be proceeded against and punished accordingly: \nProvided that nothing in this sub -section shall render any such person liable to any punishment \nprovided in this Act, if he proves that the offence was committed without his knowledge or that he \nexercised all due diligence to prevent the commission of such offence. \n(2) Notwithstanding anything contained in sub -section (1), where an offence under this Act has been",
+        "chunk_id": "d030f3d1a407",
+        "page": 92.0
     },
     {
         "id": 2,
-        "question": "According to the text, who is deemed to have committed an offence under sub-section (1) or sub-section (2)?",
-        "ground_truth": "Whoever attempts to commit any of the acts referred to in sub-section (1) or sub-section (2) in relation to any motor vehicle, or abets the commission of any such act",
-        "source_context": ". (3) Whoever attempts to commit any of the acts referred to in sub -section (1) or sub -section (2) in relation to any motor vehicle, or abets the commission of any such act, shall also be deemed to have committed an offence under sub-section (1) or, as the case may be, sub-section (2). 1. Subs. by Act 54 of 1994, s. 57, for sub-section (1) (w.e.f. 14-11-1994).",
-        "chunk_id": "cfd059d35577",
-        "page": 91
+        "question": "According to Section 157(1), what must be transferred together with the policy of insurance when a person transfers the ownership of a motor vehicle?",
+        "ground_truth": "the ownership of the motor vehicle in respect of which such insurance was taken together with the policy of",
+        "source_context": "insured, the insurer shall, as between himself and any other person except the insured, be deemed to \nhave issued to the insured to the insured person a po licy of insurance conforming in all respects with \nthe description and particulars stated in such certificate; and \n(b) if the insurer has issued to the insured the policy described in the certificate, but the actual \nterms of the policy are less favourable to persons claiming under or by virtue of the policy against the \ninsurer either directly or through the insured than the particulars of the policy as stated in the \ncertificate, the policy shall, as between the insurer and any other person except the insured , be \ndeemed to be in terms conforming in all respects with the particulars stated in the said certificate \n157. Transfer of certificate of insurance .—(1) Where a person in whose favour the certificate of \ninsurance has been issued in accordance with the provisions of this Chapter transfers to another person the \nownership of the motor vehicle in respect of which such insurance was taken together with the policy of",
+        "chunk_id": "1f997a9d200b",
+        "page": 80.0
     },
     {
         "id": 3,
-        "question": "What is the maximum fine prescribed for an importer or dealer who sells, delivers, or alters a motor vehicle or trailer in a condition that contravenes Chapter VII or any rule made thereunder?",
-        "ground_truth": "five hundred rupees",
-        "source_context": ". 191. Sale of vehicle in or alteration of vehicle to c ondition contravening this Act .—Whoever being an importer of or dealer in motor vehicles, sells or delivers or offers to sell or deliver a motor vehicle or traller in such condition that the use thereof in a public place would be in contravention of Chapter VII or any rule made thereunder or alters the motor vehicle or trailer s o as to render its condition such that its use in a public place would be in contravention of Chapter VII or any rule made thereunder shall be punishable with fine which may extend to five hundred rupees: Provided that no person shall be convicted under this section if he proves that he had reasonable cause to believe that the vehicle would not be used in a public place until it had been put into a condition in which it might lawfully be so used. 1[192",
-        "chunk_id": "910fac9a9252",
-        "page": 90
+        "question": "According to Section 9(9), who is included in the definition of \"driver\" in relation to a motor vehicle which is drawn by another motor vehicle?",
+        "ground_truth": "the person who acts as a steersman of the drawn vehicle",
+        "source_context": "9 \n \n(c) in the repair of motor vehicles; or \n(d) in the business of hypothecation, leasing or hire-purchase of motor vehicle; \n(9) “driver” includes, in relation to a motor vehicle which is drawn by another motor vehicle, the \nperson who acts as a steersman of the drawn vehicle; \n(10) “driving licence” means the licence issued by a competent authority under Chapter II authorising \nthe person specified therein to drive, otherwise than as a learner, a motor vehicle or a motor vehicle of \nany specified class or description; \n(11) “educational institution bus ” means an omnibus, which is owned by a college, school or other \neducational institution and used solely for the purpose of transporting students or staff of the educational \ninstitution in connection with any of its activities; \n(12) “fares” includes sums payable for a season ticket or in respect of the hire of a contract carriage; \n(13) “goods” includes live -stock, and anything (other than equipment ordinarily used with the \nvehicle) carried by a vehicle except living persons, but does not include luggage or p ersonal effects",
+        "chunk_id": "9a4655992aa6",
+        "page": 9.0
     },
     {
         "id": 4,
-        "question": "According to the text, within how many days from the date of publication in the Official Gazette may any person file objections to a proposal regarding a scheme before the State Government?",
-        "ground_truth": "thirty days",
-        "source_context": ". 2[(2) Notwithstanding anything contained in sub -section (1), when a proposal is published under that sub-section, then from the date of publication of such proposal, no permit shall be granted to any person, except a temporary permit du ring the pendency of the proposal and such temporary permit shall be valid only for a period of one year from the date of its issue of till the date of final publication of the scheme under section 100, whichever is earlier.] 100. Objection to the proposal .—(1) On the publication of any proposal regarding a scheme in the Official Gazette and in not less than one newspaper in the regional language circulating in the area or route which is to be covered by such proposal any person may, within thirty days from the date of its publication in the Official Gazette, file objections to it before the State Government",
-        "chunk_id": "09800eb012c6",
-        "page": 61
+        "question": "According to Section 210, to which two entities must a Court send intimation when a person holding a driving licence is convicted of an offence under the Act or an offence in the commission of which a motor vehicle was used?",
+        "ground_truth": "(a) the licensing authority which issued the driving licence, and (b) the licensing authority by whom the licence was last renewed",
+        "source_context": "96 \n \nregistered post to him or the person registered as the owner of the vehicle at the time of the \ncommission of the offence, or \n(c) within twenty -eight days of the commission of the offenc e, a summons for the offence was \nserved on him: \nProvided that nothing, in this section shall apply where the Court is satisfied that— \n(a) the failure to serve the notice or summons referred to in this sub -section was due to the fact \nthat neither the name and address of the accused nor the name and address of the registered owner of \nthe vehicle could with reasonable diligence have been ascertained in time, or \n(b) such failure was brought about by the conduct of the accused. \n210. Courts to se nd intimation about conviction .—Every Court by which any person holding a \ndriving licence is convicted of an offence under this Act or of an offence in the commission of which a \nmotor vehicle was used, shall send intimation to— \n(a) the licensing authority which issued the driving licence, and \n(b) the licensing authority by whom the licence was last renewed,",
+        "chunk_id": "350a3ee47f56",
+        "page": 96.0
     },
     {
         "id": 5,
-        "question": "According to Section 179(2), what is the maximum term of imprisonment for a person who wilfully withholds required information or gives false information under the Act?",
-        "ground_truth": "one month",
-        "source_context": "88 (b) in any other case, be punishable with fine which may extend to two hundred rupees. 179. Disobedience of orders, obstruct ion and refusal of information .—(1) Whoever wilfully disobeys any direction lawfully given by any person or authority empowered under this Act to give such direction, or obstructs any person or authority in the discharge of any functions which such person or authority is required or empowered under this Act to discharge, shall, if no other penalty is provided for the offence be punishable with fine which may extend to five hundred rupees. (2) Whoever, being required by or under this Act to supply any informatio n, wilfully withholds such information or gives information which he knows to be false or which he does not believe to be true, shall, if no other penalty is provided for the offence, be punishable with imprisonment for a term which may extend to one month, or with fine which may extend to five hundred rupees, or with both. 180",
-        "chunk_id": "580d5bdedef7",
-        "page": 88
+        "question": "According to sub-section (12), subject to the rules made by the Central Government under sub-section (14), which authority may grant a special permit?",
+        "ground_truth": "the appropriate authority",
+        "source_context": "(i) every motor vehicle in respect of which such permit is granted shall conform to such \ndescription, requirement regarding the seating capacity, standards of comforts, amenities and other \nmatters, as the Central Government may specify in this behalf; \n(ii) every such motor vehicle shall be driven by a person having such qualifications and satisfying \nsuch conditions as may be specified by the Central Government; and \n(iii) such other conditions as may be prescribed by the Central Government. \n(12) Notwithstanding anything contained in sub-section (1), but, subject to the rules that may be made \nby the Central Government under sub -section ( 14), the appropriate authority may, for the purpose of \n \n1. Subs. by Act 54 of 1994, s. 27, for “grant a special permit in relation to a vehicle covered” (w.e.f. 14-11-1994). \n2. Subs. by s. 27, ibid, for “and 89” (w.e.f. 14-11-1994). \n3. Sub-section (10) omitted by s. 27, ibid. (w.e.f. 14-11-1994).",
+        "chunk_id": "0329fe2a883a",
+        "page": 55.0
     },
     {
         "id": 6,
-        "question": "According to the text, what must the registering authority do with the registration mark before returning the certificate of registration to the applicant?",
-        "ground_truth": "enter the mark upon the certificate of registration",
-        "source_context": ". (2) The regi stering authority, to which application is made under sub -section (1), shall after making such verification, as it thinks fit, of the returns, if any, received under section 62, assign the vehicle a registration mark as specified in sub-section (6) of section 41 to be displayed and shown thereafter on the vehicle and shall enter the mark upon the certificate of registration before returning it to the applicant and shall, in communication with the registering authority by whom the vehicle was previously regi stered, arrange for the transfer of the registration of the vehicle from the records of that registering authority to its own records",
-        "chunk_id": "b148e88ed188",
-        "page": 29
+        "question": "According to Section 161(3)(a), what is the fixed sum of compensation payable in respect of the death of any person resulting from a hit and run motor accident?",
+        "ground_truth": "twenty-five thousandrupees",
+        "source_context": "accordance with the provisions o f this Act and the scheme, compensation in respect of the death of, or \ngrievous hurt to, persons resulting from hit and run motor accidents. \n(3) Subject to the provisions of this Act and the scheme, there shall be paid as compensation— \n(a) in respect of the death of any person resulting from a hit and run motor accident, a fixed sum \nof 1[twenty-five thousandrupees]; \n(b) in respect of grievous hurt to any person resulting from a hit and run motor accident, a fi xed \nsum of 2[twelve thousand and five hundred rupees]. \n(4) The provisions of sub -section ( 1) of section 166 shall apply for the purpose of making \napplications for compensation under this section as they apply for the purpose of making applications for \ncompensation referred to in that sub-section. \n162. Refund in certain cases of compe nsation paid under section 161 .—(1) The payment of \ncompensation in respect of the death of, or grievous hurt to, any person under section 161 shall be subject",
+        "chunk_id": "0f39bfa3ed39",
+        "page": 82.0
     },
     {
         "id": 7,
-        "question": "According to the text, what is the minimum population threshold for a town for the State Government to direct authorities to limit the number of contract carriages operating on city routes?",
-        "ground_truth": "not less than five lakhs",
-        "source_context": ". (3) (a) The State Government shall, if so directed by the Central Government, having regard to the number of vehicles, road conditions and other relevant matters, by notification in the Official Gazette, direct a State Transport Authority and a Regional Transport Authority to limit the number of contract carriages generally or of any specified type, as may be fixed and specified in the notification, operating on city routes in towns with a population of not less than five lakhs",
-        "chunk_id": "f50acc1342aa",
-        "page": 47
+        "question": "According to Section 43(1), to whom may the owner of a motor vehicle apply for temporary registration?",
+        "ground_truth": "any registering authority or other prescribed authority",
+        "source_context": "vehicles and the special registration marks to be assigned to such vehicles. \n(4) For the purposes of this section, “diplomatic officer” or “consular officer” means any person who \nis recognised as such by the Central Government and if any question arises as to whether a person is or is \nnot such an officer, the decision of the Central Government thereon shall be final. \n43. Temporary registration.—(1) Notwithstanding anything contained in section 40 the owner of a \nmotor vehicle may apply to any registering authority or other prescribed authority to have the vehicle \n \n1. Subs. by Act 54 of 1994, s. 11, for “original registering authority” (w.e.f. 14-11-1994).",
+        "chunk_id": "2bb66ce73aad",
+        "page": 27.0
     },
     {
         "id": 8,
-        "question": "According to the text, what condition must be met before the appropriate Government can make an order exempting a vehicle owned by a local authority or State transport undertaking from the operation of sub-section (1)?",
-        "ground_truth": "A fund has been established and is maintained by that authority in accordance with the rules made in that behalf under this Act for meeting any liability arising out of the use of any vehicle of that authority which that authority or any person in its employment may incur to third parties.",
-        "source_context": ". (2) Sub -section ( 1) shall not apply to any vehicle owned by the Central Government or a State Government and used for Government purposes unconnected with any commercial enterprise. (3) The appropriate Government may, by order, exempt from the operation of sub -section ( 1) any vehicle owned by any of the following authorities, namely:— (a) the Central Government or a State Government, if the vehicle is used for Government purposes connected with any commercial enterprise; (b) any local authority; (c) any State transport undertaking: Provided that no such order shall be made in relation to any such authority unless a fund has been established and is maintained by that authority in accordance with the rules made in that behalf under this Act for meeting any liability arising out of the use of any vehicle of that authority which that authorit y or any person in its employment may incur to third parties",
-        "chunk_id": "47c9f1a40e40",
-        "page": 75
+        "question": "According to the Explanation in the provided text, which Act defines the meaning and extent of \"permanent disability\" for the purposes of the sub-section?",
+        "ground_truth": "Workmen’s Compensation Act, 1923 (8 of 1923)",
+        "source_context": "may be. \nExplanation.—For the purposes of this sub -section, “permanent disability ” shall have the same \nmeaning and extent as in the Workmen’s Compensation Act, 1923 (8 of 1923). \n(2) In any claim for compensation under sub-section (1), the claimant shall not be required to plead or \nestablish that the death or permanent disablement in respect of which the claim has been made was due to \nany wrongful act or neglect or default of the owner of the vehicle o r vehicles concerned or of any other \nperson. \n(3) The Central Government may, keeping in view the cost of living by notification in the Official \nGazette, from time to time amend the Second Schedule. \n163B. Option to file claim in certain cases .— Where a person is entitled to claim compensation \nunder section 140 and section 163A, he shall file the claim under either of the said sections and not under \nboth.] \n164. Power of Ce ntral Government to make rules .—(1) The Central Government may make rules \nfor the purpose of carrying into effect the provisions of this Chapter, other than the ma tters specified in \nsection 159.",
+        "chunk_id": "d3f1273d5b04",
+        "page": 83.0
     },
     {
         "id": 9,
-        "question": "According to the text, what must the Regional Transport Authority assign to a vehicle when a special permit is granted?",
-        "ground_truth": "a special distinguishing mark in the form and manner specified by the Central Government",
-        "source_context": ". (8) Notwithstanding anything contained in sub -section (1), but subject to any rules that may be made under this Act by the Central Government, the Regional Transport Authority of any one region or, as the case may be, the State Transpo rt Authority, may, for the convenience of the public, 1[grant a special permit to any public service vehicle including any vehicle covered] by a permit issued under section 72 (including a reserve stage carriage) or under section 74 or under sub -section ( 9) of this section for carrying a passenger or passengers for hire or reward under a contract, express or implied, for the use of the vehicle as a whole without stopping to pick up or set down along the line of route passengers not included in the contract, and in every case where such special permit is granted, the Regional Transport Authority shall assign to the vehicle, for display thereon, a special distinguishing mark in the form and manner specified by the Central Government and such special permit shall be valid in any other region or State without the countersignature of the Regional",
-        "chunk_id": "d07c44cfa709",
-        "page": 55
+        "question": "According to Section (2), to whom must a police officer or other authorized person forward a seized licence if they believe the driver may abscond or avoid service of a summons?",
+        "ground_truth": "the Court taking cognizance of the offence",
+        "source_context": "or other document produced to him by the driver or person in charge of a motor vehicle is a false \ndocument within the meaning of section 464 of the Indian Penal Code (45 of 1860 ), seize the mark or \ndocument and call upon the driver or owner of the vehicle to account for his possession of or the presence \nin the vehicle of such mark or document. \n(2) Any police officer or other person authorised in this behalf by the State Government may, if he \nhas reason to believe that the driver of amotor vehicle who is charg ed with any offence under this Act \nmay abscond or otherwise avoid the service of a summons, seize any licence held by such driver and \nforward it to the Court taking cognizance of the offence and the said Court shall on the first appearance of \nsuch driver b efore it, return the licence to him in exchange for the temporary acknowledgme nt given \nunder sub-section (3). \n(3) A police officer or other pers on seizing a licence under sub -section (2) shall give to the person",
+        "chunk_id": "e88c53789724",
+        "page": 94.0
     },
     {
         "id": 10,
-        "question": "According to the provided text, what specific condition must be met for a person holding a vehicle under a hire-purchase agreement to make any alteration to the vehicle?",
-        "ground_truth": "The person must have the written consent of the registered owner.",
-        "source_context": ". (4) A registering authority other than the original registering authority making any such entry shall communicate the details of the entry to the original registering authority. (5) Subject to the provisions made under sub-sections (1), (2), (3) and (4), no person holding a vehicle under a hire-purchase agreement shall make any alteration to the vehicle except with the written c onsent of the registered owner. Explanation.—For the purposes of this section, “alteration” means a change in the structure of a vehicle which results in a change in its basic feature.] 53",
-        "chunk_id": "00b2b5264be1",
-        "page": 34
+        "question": "According to Section 111(1), what specific matters are excluded from the rules that a State Government may make regarding the construction, equipment, and maintenance of motor vehicles and trailers?",
+        "ground_truth": "the matters specified in sub-section (1) of section 110",
+        "source_context": "vehicles from the rules made under sub-section (1) subject to such conditions as may be prescribed by \nthe Central Government. \n111. Power of State Government to make rules .—(1) A State Government may make rules \nregulating the construction, equipment and maintenance of motor vehicles and trailers with respect to all \nmatters other than the matters specified in sub-section (1) of section 110. \n(2) Without prejudice to the generalit y of the foregoing power, rules may be made under this section \ngoverning all or any of the following matters either generally in respect of motor vehicles or trailers or in \nrespect of motor vehicles or trailers of a particular class or description or in pa rticular circumstances, \nnamely:— \n(a) seating arrangements in public service vehicles and the protection of passenger s against the \nweather; \n(b) prohibiting or restricting the use of audible signals at certain times or in certain places; \n(c) prohibiting the carrying of appliances likely to cause annoyance or danger;",
+        "chunk_id": "6ebcbe87b3f8",
+        "page": 65.0
     },
     {
         "id": 11,
-        "question": "According to subsection (3), what specific immunity shall no rule made under this section confer on any person in any State?",
-        "ground_truth": "immunity in any State from the payment of any tax levied in that State on motor vehicles or their users",
-        "source_context": "73 (h) the identification of the drivers and conductors of such motor vehicles; (i) the replacement of the travelling passes, certificates or authorisations, permits, licences or any other prescribed documents lost or defaced, on payment of such fee as may be prescribed; (j) the exemption from the provisions of such laws as relate to customs, police or health with a view to facilitate such road transport services; (k) any other matter which is to be, or may be, prescribed. (3) No rule made under th is section shall operate to confer on any person any immunity in any State from the payment of any tax levied in that State on motor vehicles or their users",
-        "chunk_id": "75a98aa64deb",
-        "page": 73
+        "question": "According to Section 204(1)(a), under what condition may a police officer require a person arrested under section 203 to provide a blood specimen for a Laboratory test?",
+        "ground_truth": "it appears to the police officer that the device, by means of which breath test was taken in relation to such person, indicates the presence of alcohol in the blood of such person",
+        "source_context": "specimens of breath provided by that person, by means of a device of a type approved by the Central \nGovernment, by notification in the Official Gazette, for the purpose of such a test. \n204. Laboratory test.—(1) A person, who has been arrested under section 203 may, while at a police \nstation, be required by a police officer to provide to such registered medical practitioner as may be \nproduced by such police officer, a specimen of his blood for a Laboratory test,— \n(a) it appears to the police officer that the device, by means of which breath test was taken in \nrelation to such person, indicates the presence of alcohol in the blood of such person, or \n \n1. Subs. by Act 54 of 1994, s. 60, for sub-section (2) (w.e.f. 14-11-1994). \n2. Subs. by s. 61, ibid., for sub-section (1) (w.e.f. 14-11-1994).",
+        "chunk_id": "4d09d123c144",
+        "page": 93.0
     },
     {
         "id": 12,
-        "question": "Under what condition may a police officer in uniform arrest a person without a warrant for an offence under the Act, according to the provided text?",
-        "ground_truth": "if such person refuses to give his name and address",
-        "source_context": "93 1[(2) A police officer in uniform may arrest without warrant any person, who has committed an offence under this Act, if such person refuses to give his name and address.] (3) A police officer arresting without warrant the driver of a motor vehicle shall if the circumstances so require take or cause to be taken any steps he may consider proper for the tem porary disposal of the vehicle. 203",
-        "chunk_id": "9bc7884daafe",
-        "page": 93
+        "question": "According to Section 77(a), what specific detail regarding the scope of the application must be included in an application for a goods carriage permit?",
+        "ground_truth": "the area or the route or routes to which the application relates",
+        "source_context": "49 \n \n(b) attach to the permit further conditions; \n(iv) that the conditions of permit shall not be departed from, save with the approval of th e \nRegional Transport Authority; \n(v) that specified standards of comforts and cleanliness shall be maintained in the vehicle; \n(vi) that the holder of the permit shall furnish to the Regional Transport Authority such periodical \nreturns, statistics and other information as the State Government may, from time to time, specify; and \n(vii) such other conditions as may be prescribed. \n77. Application for goods carriage permit .—An application for a permit to use a motor vehicle for \nthe carriage of goods for hire or reward or for the carriage of goods for or in connection with a trade or \nbusiness carried on by the applicant (in this Chapter referred to as a goods carriage permit) shall, as far as \nmay be, contain the following particulars, namely:— \n(a) the area or the route or routes to which the application relates; \n(b) the type and capacity of the vehicle; \n(c) the nature of the goods it is proposed to carry;",
+        "chunk_id": "64bb94a712dc",
+        "page": 49.0
     },
     {
         "id": 13,
-        "question": "Within how many days must a motor vehicle owner intimate their new address to the registering authority after ceasing to reside or have their place of business at the address recorded in the certificate of registration?",
-        "ground_truth": "thirty days",
-        "source_context": ". Change of residence or place of business.—(1) If the owner of a motor vehicle ceases to reside or have his place of business at the address recorded in the certificate of registration of the vehicle, he shall, within thirty days of any such change of address, intimate in such form accompanied by suc h documents as may be prescribed by the Central Government, his new address, to the registering authority by which the certificate of registration was issued, or, if the new address is within the jurisdiction of another registering authority, to that other registering authority, and shall at the same time forward the certificate of registration to the registering authority or, as the case may be, to the other registering authority in order that the new address may be entered therein",
-        "chunk_id": "4cddc61869d7",
-        "page": 30
-    },
-    {
-        "id": 14,
-        "question": "According to the text, what must the owner of a vehicle do forthwith after a registering authority communicates in writing that the registration has been cancelled?",
-        "ground_truth": "surrender to that authority the certificate of registration of the vehicle",
-        "source_context": ". (6) A registering authority cancelling the registration of a motor vehicle under section 54 or under this section shall communicate such fact in writing to the owner of the vehicle, and the owner of the vehicle shall forthwith surrender to that authority the certificate of registration of the vehicle. (7) A registering authority making an order of cancellatio n under section 54 or under this section shall, if it is the original registering authority, cancel the certificate of registration and the entry relating to the vehicle in its records, and, if it is not the original registering authority, forward the cert ificate of",
-        "chunk_id": "298e32072fa0",
-        "page": 35
-    },
-    {
-        "id": 15,
-        "question": "Within what timeframe must an owner report to the registering authority if a motor vehicle has been destroyed or rendered permanently incapable of use?",
-        "ground_truth": "within fourteen days or as soon as may be",
-        "source_context": ". 55. Cancellation of registration .—(1) If a motor vehicle has been destroyed or has been rendered permanently incapable of use, the owner shall, within fourteen days or as soon as may be, report the fact to the registering authority within whose jurisdiction he has the residence or place of b usiness where the vehicle is normally kept, as the case may be, and shall forward to that authority the certificate of registration of the vehicle. (2) The registering authority shall, if it is the original registering authority, cancel the registration an d the certificate of registration, or, if it is not, shall forward the report and the certificate of registration to the original registering authority and that authority shall cancel the registration",
-        "chunk_id": "4f59a018e10d",
-        "page": 35
+        "question": "According to Section 21(1), what specific offence must a person have been previously convicted of for the suspension of their driving licence to apply in cases where they are alleged to have caused death or grievous hurt by dangerous driving?",
+        "ground_truth": "an offence punishable under section 184",
+        "source_context": "sub-section notwithstanding that no appeal would lie against the conviction as a result of which such \norder of disqualification was made. \n21. Suspension of dr iving licence in certain cases .—(1) Where, in relation to a person who had \nbeen previously convicted of an offence punishable under section 184, a case is registered by a police \nofficer on the allegation that such person has, by such dangerous driving as is referred to in the said \nsection 184, of any class or description of motor vehicle caused the death of, or grievous hurt to, one or",
+        "chunk_id": "1df95eb7ddd2",
+        "page": 19.0
     }
 ]

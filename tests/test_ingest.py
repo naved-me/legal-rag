@@ -38,8 +38,5 @@ def test_split_keeps_min_chunk_size():
 @pytest.mark.skipif(
     not os.path.exists(ingest.PDF_PATH), reason="sample PDF not present"
 )
-def test_dry_run_extracts_without_writing(tmp_path, monkeypatch):
-    monkeypatch.setattr(ingest, "CHROMA_PATH", str(tmp_path / "chroma"))
-    monkeypatch.setattr(ingest, "COLLECTION_NAME", "test-legal-docs")
+def test_dry_run_extracts_without_writing():
     ingest.ingest_data(dry_run=True)
-    assert not (tmp_path / "chroma").exists()

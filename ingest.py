@@ -10,12 +10,17 @@ load_dotenv()
 from pypdf import PdfReader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_pinecone import PineconeVectorStore
+from pinecone import Pinecone, ServerlessSpec
 
 PDF_PATH = os.getenv("PDF_PATH", "motor_laws_sample.pdf")
-CHROMA_PATH = os.getenv("CHROMA_PATH", "chroma_db")
-COLLECTION_NAME = os.getenv("COLLECTION_NAME", "legal-docs")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "legal-rag")
+PINECONE_CLOUD = os.getenv("PINECONE_CLOUD", "aws")
+PINECONE_REGION = os.getenv("PINECONE_REGION", "us-east-1")
+PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", "384"))  # all-MiniLM-L6-v2
+PINECONE_METRIC = os.getenv("PINECONE_METRIC", "cosine")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1100"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
@@ -25,6 +30,27 @@ MIN_CHUNK_CHARS = int(os.getenv("MIN_CHUNK_CHARS", "60"))
 @lru_cache(maxsize=1)
 def get_embeddings():
     return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+
+
+def get_pinecone():
+    if not PINECONE_API_KEY:
+        raise RuntimeError("PINECONE_API_KEY is not set. Add it to .env to ingest into Pinecone.")
+    return Pinecone(api_key=PINECONE_API_KEY)
+
+
+def ensure_index():
+    """Create the Pinecone index if it doesn't exist yet (serverless)."""
+    pc = get_pinecone()
+    if PINECONE_INDEX_NAME not in pc.list_indexes().names():
+        print(f"Creating Pinecone index '{PINECONE_INDEX_NAME}' "
+              f"(dim={PINECONE_DIMENSION}, metric={PINECONE_METRIC})...")
+        pc.create_index(
+            name=PINECONE_INDEX_NAME,
+            dimension=PINECONE_DIMENSION,
+            metric=PINECONE_METRIC,
+            spec=ServerlessSpec(cloud=PINECONE_CLOUD, region=PINECONE_REGION),
+        )
+    return pc.Index(PINECONE_INDEX_NAME)
 
 
 def clean_text(text: str) -> str:
@@ -111,23 +137,20 @@ def ingest_data(dry_run: bool = False, reset: bool = False) -> None:
         print("DRY RUN: no documents written to the database.")
         return
 
-    embeddings = get_embeddings()
+    index = ensure_index()
     if reset:
-        print(f"Deleting existing collection '{COLLECTION_NAME}' (--reset)...")
-        Chroma(
-            persist_directory=CHROMA_PATH,
-            embedding_function=embeddings,
-            collection_name=COLLECTION_NAME,
-        ).delete_collection()
+        print(f"Deleting all vectors from '{PINECONE_INDEX_NAME}' (--reset)...")
+        index.delete(delete_all=True, namespace="")
 
-    print(f"Writing {len(chunks)} chunks to Chroma collection '{COLLECTION_NAME}'...")
-    Chroma.from_documents(
+    print(f"Upserting {len(chunks)} chunks into Pinecone index '{PINECONE_INDEX_NAME}'...")
+    vector_store = PineconeVectorStore(index=index, embedding=get_embeddings(), text_key="text")
+    # chunk_id is a sha1 of the content, so upserts are idempotent (no duplicates).
+    vector_store.add_documents(
         documents=chunks,
-        embedding=embeddings,
-        persist_directory=CHROMA_PATH,
-        collection_name=COLLECTION_NAME,
+        ids=[c.metadata["chunk_id"] for c in chunks],
+        namespace="",
     )
-    print(f"Successfully saved to {CHROMA_PATH}/{COLLECTION_NAME}.")
+    print(f"Successfully saved {len(chunks)} chunks to Pinecone index '{PINECONE_INDEX_NAME}'.")
 
 
 def _counts(skipped):
@@ -147,9 +170,9 @@ def _median(nums):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Ingest legal PDF into Chroma.")
+    parser = argparse.ArgumentParser(description="Ingest legal PDF into Pinecone.")
     parser.add_argument("--dry-run", action="store_true", help="Extract + chunk but do not write.")
     parser.add_argument("--reset", action="store_true",
-                        help="Delete the existing collection first (avoids duplicate chunks).")
+                        help="Delete all existing vectors first (avoids duplicates).")
     args = parser.parse_args()
     ingest_data(dry_run=args.dry_run, reset=args.reset)

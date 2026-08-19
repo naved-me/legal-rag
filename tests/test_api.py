@@ -5,10 +5,6 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 import api
 
-pytestmark = pytest.mark.skipif(
-    not os.path.exists("chroma_db"), reason="chroma_db not built; run ingest.py first"
-)
-
 REAL_KEY = "test-key-1"
 
 

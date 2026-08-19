@@ -1,13 +1,16 @@
 import os
 import re
 import time
+import math
+import random
+import hashlib
 from functools import lru_cache
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain_pinecone import PineconeVectorStore
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -15,15 +18,19 @@ from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage
 from sentence_transformers import CrossEncoder
 from rank_bm25 import BM25Okapi
+from pinecone import Pinecone
 
-CHROMA_PATH = os.getenv("CHROMA_PATH", "chroma_db")
-COLLECTION_NAME = os.getenv("COLLECTION_NAME", "legal-docs")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "legal-rag")
+PINECONE_CLOUD = os.getenv("PINECONE_CLOUD", "aws")
+PINECONE_REGION = os.getenv("PINECONE_REGION", "us-east-1")
+PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", "384"))  # all-MiniLM-L6-v2
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 LLM_MODEL = os.getenv("LLM_MODEL", "qwen/qwen3.6-27b")
 RETRIEVAL_K = int(os.getenv("RETRIEVAL_K", "6"))
 RERANK_MODEL = os.getenv("RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 RERANK_FETCH_K = int(os.getenv("RERANK_FETCH_K", "25"))
-RERANK_MIN_SCORE = float(os.getenv("RERANK_MIN_SCORE", "1.0"))
+RERANK_MIN_SCORE = float(os.getenv("RERANK_MIN_SCORE", "-1.0"))
 RERANK_HARD_FLOOR = float(os.getenv("RERANK_HARD_FLOOR", "-2.0"))
 # Fallback relevance gate used only if the reranker is unavailable.
 MIN_RELEVANCE_SCORE = float(os.getenv("MIN_RELEVANCE_SCORE", "0.30"))
@@ -35,12 +42,19 @@ def _embeddings():
 
 
 @lru_cache(maxsize=1)
+def _pc():
+    if not PINECONE_API_KEY:
+        raise RuntimeError(
+            "PINECONE_API_KEY is not set. Add it to .env and create the index "
+            f"(run: python ingest.py --reset) before using the chatbot."
+        )
+    return Pinecone(api_key=PINECONE_API_KEY)
+
+
+@lru_cache(maxsize=1)
 def _store():
-    return Chroma(
-        persist_directory=CHROMA_PATH,
-        embedding_function=_embeddings(),
-        collection_name=COLLECTION_NAME,
-    )
+    index = _pc().Index(PINECONE_INDEX_NAME)
+    return PineconeVectorStore(index=index, embedding=_embeddings(), text_key="text")
 
 
 @lru_cache(maxsize=1)
@@ -99,20 +113,48 @@ def _tokenize(text: str):
     return re.findall(r"[a-z0-9]+", text.lower())
 
 
+def _doc_key(doc) -> str:
+    """Stable identity for RRF fusion: prefer chunk_id, fall back to a content hash."""
+    cid = doc.metadata.get("chunk_id")
+    if cid:
+        return cid
+    return hashlib.sha1(doc.page_content.encode("utf-8")).hexdigest()
+
+
+def _enumeration_vector(dim: int):
+    """Deterministic unit vector used to enumerate the whole corpus from Pinecone."""
+    rng = random.Random(42)
+    v = [rng.uniform(-1, 1) for _ in range(dim)]
+    norm = math.sqrt(sum(x * x for x in v))
+    return [x / norm for x in v]
+
+
 @lru_cache(maxsize=1)
 def _bm25_index():
     """In-memory BM25 index over the same chunks as the vector store."""
-    data = _store().get(include=["documents", "metadatas"])
-    docs = [
-        Document(page_content=text, metadata=meta or {})
-        for text, meta in zip(data["documents"] or [], data["metadatas"] or [])
-    ]
+    index = _store().index
+    stats = index.describe_index_stats()
+    count = int(stats["total_vector_count"])
+    result = index.query(
+        vector=_enumeration_vector(PINECONE_DIMENSION),
+        top_k=count,
+        include_metadata=True,
+        include_values=False,
+    )
+    docs = []
+    for match in result["matches"]:
+        meta = match.get("metadata") or {}
+        text = meta.get("text") or ""
+        if not text:
+            continue
+        docs.append(Document(page_content=text, metadata=meta))
     tokenized = [_tokenize(d.page_content) for d in docs]
     return BM25Okapi(tokenized), docs
 
 
 def reload_caches():
-    """Drop cached singletons (embeddings, store, BM25). Call after re-ingesting."""
+    """Drop cached singletons (Pinecone client, embeddings, store, BM25). Call after re-ingesting."""
+    _pc.cache_clear()
     _embeddings.cache_clear()
     _store.cache_clear()
     _bm25_index.cache_clear()
@@ -126,8 +168,7 @@ def _hybrid_candidates(question: str, k: int = RERANK_FETCH_K):
 
     fused = {}
     for rank, doc in enumerate(vec_hits, start=1):
-        cid = doc.metadata.get("chunk_id")
-        fused[cid] = [1.0 / (60 + rank), doc]
+        fused[_doc_key(doc)] = [1.0 / (60 + rank), doc]
 
     bm25_scores = bm25.get_scores(_tokenize(question))
     ranked_ids = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)
@@ -137,12 +178,12 @@ def _hybrid_candidates(question: str, k: int = RERANK_FETCH_K):
             continue
         bm_rank += 1
         doc = all_docs[idx]
-        cid = doc.metadata.get("chunk_id")
-        entry = fused.get(cid)
+        key = _doc_key(doc)
+        entry = fused.get(key)
         if entry:
             entry[0] += 1.0 / (60 + bm_rank)
         else:
-            fused[cid] = [1.0 / (60 + bm_rank), doc]
+            fused[key] = [1.0 / (60 + bm_rank), doc]
 
     ranked = sorted(fused.values(), key=lambda x: x[0], reverse=True)
     return [doc for _score, doc in ranked][:k]
