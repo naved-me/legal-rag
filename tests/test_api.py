@@ -125,3 +125,42 @@ def test_session_history_persists(client, monkeypatch):
     r2 = client.post("/ask", json={"question": "second", "session_id": sid}, headers=headers)
     assert r2.status_code == 200
     assert seen == [0, 2]
+
+
+def test_sessions_require_auth(client, canned_answer):
+    assert client.post("/sessions").status_code == 401
+    assert client.get("/sessions").status_code == 401
+    assert client.get("/sessions/abc").status_code == 401
+    assert client.delete("/sessions/abc").status_code == 401
+
+
+def test_sessions_crud(client, canned_answer):
+    headers = {"Authorization": f"Bearer {REAL_KEY}"}
+
+    created = client.post("/sessions", headers=headers).json()
+    sid = created["session_id"]
+    assert sid
+
+    listed = client.get("/sessions", headers=headers).json()
+    assert any(s["session_id"] == sid for s in listed)
+
+    client.post("/ask", json={"question": "first", "session_id": sid}, headers=headers)
+
+    detail = client.get(f"/sessions/{sid}", headers=headers)
+    assert detail.status_code == 200
+    msgs = detail.json()["messages"]
+    assert len(msgs) == 2
+    assert msgs[0]["role"] == "human"
+    assert msgs[0]["content"] == "first"
+
+    listed = client.get("/sessions", headers=headers).json()
+    entry = next(s for s in listed if s["session_id"] == sid)
+    assert entry["title"] == "first"
+
+    assert client.delete(f"/sessions/{sid}", headers=headers).status_code == 204
+    assert client.get(f"/sessions/{sid}", headers=headers).status_code == 404
+
+
+def test_sessions_delete_missing(client):
+    headers = {"Authorization": f"Bearer {REAL_KEY}"}
+    assert client.delete("/sessions/does-not-exist", headers=headers).status_code == 404

@@ -256,6 +256,30 @@ def _rewrite_question(question: str, history: list) -> str:
     return result if result else question
 
 
+def _refine_query(question: str) -> str:
+    """Formalize a colloquial question into precise legal terms for a retry.
+
+    Triggered only when retrieval refuses, so everyday queries cost nothing.
+    E.g. "what's the ticket price for speeding?" -> "what is the maximum
+    fine for exceeding the speed limit?".
+    """
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "Rewrite the following user question about the Motor Vehicles Act into a precise, "
+            "formal legal query suitable for searching a legal document. Use standard legal terms "
+            "(e.g. 'fine' instead of 'ticket price', 'exceeding the speed limit' instead of "
+            "'speeding'). Keep the same intent and facts. Output only the rewritten question, "
+            "or return the original unchanged if it is already formal."
+        )),
+        ("human", "{input}"),
+    ])
+    try:
+        result = _invoke(prompt | _llm() | StrOutputParser(), {"input": question}).strip()
+        return result if result else question
+    except Exception:
+        return question
+
+
 def _format_context(documents: list) -> str:
     """Prefix each chunk with its source page so the LLM can cite it inline."""
     parts = []
@@ -297,6 +321,16 @@ def query_rag(question: str, history: list = None, api_mode: bool = False):
         print("Loading database (cached across calls)...")
 
     documents, max_score = _rank_context(question)
+
+    # Retry once with a formal legal rephrase when retrieval refuses. Colloquial
+    # questions ("ticket price for speeding?") often fail the re-ranker gate even
+    # though the document covers them.
+    if not documents:
+        refined = _refine_query(question)
+        if refined and refined.lower().strip() != question.lower().strip():
+            refined_docs, refined_score = _rank_context(refined)
+            if refined_docs:
+                documents, max_score, question = refined_docs, refined_score, refined
 
     if not documents:
         if not api_mode:

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('send-btn');
     const newChatBtn = document.getElementById('new-chat-btn');
     const apiKeyInput = document.getElementById('api-key-input');
+    const sessionListEl = document.getElementById('session-list');
 
     // Store the session ID to maintain conversational memory
     let currentSessionId = null;
@@ -18,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (key) localStorage.setItem('apiKey', key);
             else localStorage.removeItem('apiKey');
         });
+    }
+
+    function getHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '') || localStorage.getItem('apiKey') || '';
+        if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+        return headers;
     }
 
     // Escape untrusted text before inserting into the DOM (prevents XSS).
@@ -90,6 +98,108 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function renderSessions(list, activeId) {
+        sessionListEl.innerHTML = '';
+        if (!list || list.length === 0) {
+            sessionListEl.innerHTML = '<div class="session-empty">No chats yet</div>';
+            return;
+        }
+        list.forEach(s => {
+            const item = document.createElement('div');
+            item.className = 'session-item' + (s.session_id === activeId ? ' active' : '');
+            item.dataset.id = s.session_id;
+
+            const title = document.createElement('span');
+            title.className = 'session-title';
+            title.textContent = s.title || 'New chat';
+
+            const del = document.createElement('button');
+            del.className = 'session-delete';
+            del.title = 'Delete chat';
+            del.textContent = '✕';
+            del.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteSession(s.session_id);
+            });
+
+            item.addEventListener('click', () => openSession(s.session_id));
+            item.appendChild(title);
+            item.appendChild(del);
+            sessionListEl.appendChild(item);
+        });
+    }
+
+    async function loadSessions() {
+        try {
+            const resp = await fetch('/sessions', { headers: getHeaders() });
+            if (!resp.ok) throw new Error('failed');
+            renderSessions(await resp.json(), currentSessionId);
+        } catch (err) {
+            console.error('Failed to load sessions:', err);
+        }
+    }
+
+    function clearChat(welcomeText) {
+        messagesWrapper.innerHTML = `
+            <div class="message ai-message welcome-message">
+                <div class="avatar">AI</div>
+                <div class="bubble">
+                    <p>${escapeHtml(welcomeText)}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Create a fresh thread WITHOUT clearing existing ones (ChatGPT-style).
+    async function newChat() {
+        try {
+            const resp = await fetch('/sessions', { method: 'POST', headers: getHeaders() });
+            if (!resp.ok) throw new Error('failed');
+            const data = await resp.json();
+            currentSessionId = data.session_id;
+            clearChat('New chat started. How can I help you?');
+            loadSessions();
+        } catch (err) {
+            console.error('Failed to create session:', err);
+        }
+    }
+
+    // Switch to an existing thread and re-render its history.
+    async function openSession(sessionId) {
+        try {
+            const resp = await fetch(`/sessions/${encodeURIComponent(sessionId)}`, { headers: getHeaders() });
+            if (!resp.ok) throw new Error('failed');
+            const data = await resp.json();
+            currentSessionId = sessionId;
+            messagesWrapper.innerHTML = '';
+            if (!data.messages || data.messages.length === 0) {
+                clearChat('New chat started. How can I help you?');
+            } else {
+                data.messages.forEach(m => addMessage(m.content, m.role === 'human'));
+            }
+            loadSessions();
+        } catch (err) {
+            console.error('Failed to open session:', err);
+        }
+    }
+
+    async function deleteSession(sessionId) {
+        try {
+            const resp = await fetch(`/sessions/${encodeURIComponent(sessionId)}`, {
+                method: 'DELETE',
+                headers: getHeaders(),
+            });
+            if (!resp.ok && resp.status !== 404) throw new Error('failed');
+            if (sessionId === currentSessionId) {
+                currentSessionId = null;
+                clearChat('Chat deleted. How can I help you?');
+            }
+            loadSessions();
+        } catch (err) {
+            console.error('Failed to delete session:', err);
+        }
+    }
+
     // Handle form submission
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -114,13 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 payload.session_id = currentSessionId;
             }
 
-            const headers = { 'Content-Type': 'application/json' };
-            const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '') || localStorage.getItem('apiKey') || '';
-            if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
-
             const response = await fetch('/ask', {
                 method: 'POST',
-                headers: headers,
+                headers: getHeaders(),
                 body: JSON.stringify(payload)
             });
 
@@ -137,6 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
             removeLoading();
             addMessage(data.answer, false, data.sources);
 
+            // 6. Refresh the sidebar (new session / updated title & order)
+            loadSessions();
+
         } catch (error) {
             console.error('Error:', error);
             removeLoading();
@@ -148,16 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Reset session when clicking New Chat
-    newChatBtn.addEventListener('click', () => {
-        currentSessionId = null;
-        messagesWrapper.innerHTML = `
-            <div class="message ai-message welcome-message">
-                <div class="avatar">AI</div>
-                <div class="bubble">
-                    <p>New session started! Context cleared. How can I help you?</p>
-                </div>
-            </div>
-        `;
-    });
+    newChatBtn.addEventListener('click', newChat);
+
+    // Load the sidebar on startup
+    loadSessions();
 });
