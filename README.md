@@ -117,6 +117,4 @@ docker build --build-arg HF_TOKEN=hf_xxx -t legal-rag .
 docker run -p 8000:8000 --env-file .env legal-rag
 ```
 
-The `chroma_db/` index is built inside the image at build time. CI (GitHub Actions) runs
-`ingest.py` + `pytest` + `retrieval_check.py` on every PR, and a full `evaluate.py` run on a
-daily schedule (needs a `GROQ_API_KEY` repo secret).
+The `chroma_db/` index is built inside the image at build time.
