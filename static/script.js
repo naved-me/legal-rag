@@ -4,28 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesWrapper = document.getElementById('chat-messages');
     const sendBtn = document.getElementById('send-btn');
     const newChatBtn = document.getElementById('new-chat-btn');
-    const apiKeyInput = document.getElementById('api-key-input');
     const sessionListEl = document.getElementById('session-list');
 
     // Store the session ID to maintain conversational memory
     let currentSessionId = null;
 
-    // API key (optional) persisted locally; sent as Authorization: Bearer <key>
-    const savedKey = localStorage.getItem('apiKey') || '';
-    if (apiKeyInput) apiKeyInput.value = savedKey;
-    if (apiKeyInput) {
-        apiKeyInput.addEventListener('change', () => {
-            const key = apiKeyInput.value.trim();
-            if (key) localStorage.setItem('apiKey', key);
-            else localStorage.removeItem('apiKey');
-        });
-    }
-
     function getHeaders() {
-        const headers = { 'Content-Type': 'application/json' };
-        const apiKey = (apiKeyInput ? apiKeyInput.value.trim() : '') || localStorage.getItem('apiKey') || '';
-        if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
-        return headers;
+        return { 'Content-Type': 'application/json' };
     }
 
     // Escape untrusted text before inserting into the DOM (prevents XSS).

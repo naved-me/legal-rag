@@ -6,7 +6,7 @@ Motor Vehicles Act from your PDF, with **grounded, page-cited answers** and a fu
 - **Hybrid retrieval**: Pinecone vector search + BM25 keyword search fused with Reciprocal Rank Fusion
 - **Cross-encoder re-ranking** for precision, with a confidence gate that refuses out-of-scope questions
 - **Fast, deterministic LLM** (Groq Qwen) with inline `[Page N]` citations
-- **Production API**: FastAPI, per-key auth, per-key rate limiting, CORS, SQLite-backed chat sessions
+- **Production API**: FastAPI, per-IP rate limiting, CORS, SQLite-backed chat sessions with a session sidebar
 - **Zero-token evaluation**: hit-rate@k / MRR checks plus an LLM-as-a-Judge accuracy harness
 
 ---
@@ -27,7 +27,7 @@ Motor Vehicles Act from your PDF, with **grounded, page-cited answers** and a fu
 └─────┬─────┘                 → top-6 context + history → Groq LLM
       │                       → answer with [Page N] citations
       └─────────────────────────────▲
-              api.py (FastAPI): auth, rate limit, SQLite sessions, CORS, X-Request-ID
+              api.py (FastAPI): rate limit, SQLite sessions, CORS, X-Request-ID
 ```
 
 ---
@@ -52,7 +52,6 @@ PINECONE_API_KEY=pcsk_...
 # Optional
 HF_TOKEN=hf_...                 # faster HF model downloads
 PINECONE_INDEX_NAME=legal-rag
-API_KEYS=key1,key2              # empty = auth disabled
 ```
 
 ### 3. Ingest the document
@@ -94,7 +93,6 @@ Ask a question with optional conversational session.
 **Headers**
 | Header | Required | Description |
 |---|---|---|
-| `Authorization: Bearer <key>` | if `API_KEYS` set | Per-key authentication |
 | `X-Request-ID` | no | Echoed back for request tracing |
 
 **Body**
@@ -114,7 +112,7 @@ Ask a question with optional conversational session.
 }
 ```
 
-**Errors**: `401` invalid key · `422` bad input · `429` upstream rate limit · `503` upstream outage · `500` internal.
+**Errors**: `422` bad input · `429` upstream rate limit · `503` upstream outage · `500` internal.
 
 ---
 
@@ -140,8 +138,7 @@ All optional — sensible defaults shown.
 | `RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder re-ranker |
 | `RERANK_MIN_SCORE` | `-1.0` | Re-ranker gate for context entry |
 | `RERANK_HARD_FLOOR` | `-2.0` | Below this, refuse to answer |
-| `API_KEYS` | empty | Comma-separated bearer keys (empty = auth off) |
-| `RATE_LIMIT` | `20/minute` | Per-key (or per-IP) `/ask` limit |
+| `RATE_LIMIT` | `20/minute` | Per-IP `/ask` limit |
 | `MAX_SESSIONS` | `1000` | Session-store cap (oldest evicted) |
 | `MAX_HISTORY_TURNS` | `6` | Chat turns kept per session |
 | `SESSION_DB` | `sessions.db` | SQLite session store |
@@ -190,7 +187,7 @@ you change chunking, retrieval, or thresholds.
 ## Project Structure
 
 ```
-├── api.py               FastAPI server (auth, rate limit, sessions, error mapping)
+├── api.py               FastAPI server (rate limit, sessions, error mapping)
 ├── chat.py              RAG pipeline: hybrid retrieval → re-rank → generate
 ├── ingest.py            PDF → clean → chunk → embed → Pinecone
 ├── evaluate.py          LLM-as-a-Judge answer accuracy
@@ -209,8 +206,7 @@ you change chunking, retrieval, or thresholds.
 ## Security Notes
 
 - Keys live only in `.env` (gitignored) — never commit them.
-- The web UI stores its API key in `localStorage` and sanitizes rendered text (XSS protection).
-- Auth keys are rate-limited per-key and stored hashed in logs.
+- All rendered text is sanitized client-side (XSS protection).
 - Set `ALLOWED_ORIGINS` to your frontend domain before exposing publicly.
 
 ---

@@ -89,24 +89,6 @@ body {
     line-height: 1.5;
 }
 
-#api-key-input {
-    width: 100%;
-    box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    border-radius: 8px;
-    padding: 0.5rem 0.625rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    outline: none;
-    transition: border-color 0.2s ease;
-}
-
-#api-key-input:focus {
-    border-color: var(--accent-color);
-}
-
 .secondary-btn {
     background-color: transparent;
     border: 1px solid var(--border-color);

@@ -1,4 +1,3 @@
-import hashlib
 import json
 import logging
 import os
@@ -9,10 +8,9 @@ import uuid
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field, field_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -26,29 +24,14 @@ from langchain_core.messages import HumanMessage, AIMessage
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-# Comma-separated API keys. Empty = auth disabled (development mode).
-API_KEYS = {k.strip() for k in os.getenv("API_KEYS", "").split(",") if k.strip()}
 MAX_SESSIONS = int(os.getenv("MAX_SESSIONS", "1000"))
 MAX_HISTORY_TURNS = int(os.getenv("MAX_HISTORY_TURNS", "6"))  # human+ai pairs kept
 RATE_LIMIT = os.getenv("RATE_LIMIT", "20/minute")
 SESSION_DB = os.getenv("SESSION_DB", "sessions.db")
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 
-security = HTTPBearer(auto_error=False)
 
-
-def _rate_limit_key(request: Request) -> str:
-    """Rate limit per API key when auth is enabled; fall back to client IP."""
-    if API_KEYS:
-        auth = request.headers.get("Authorization") or ""
-        if auth.startswith("Bearer "):
-            token = auth[len("Bearer "):].strip()
-            if token:
-                return "key:" + hashlib.sha256(token.encode()).hexdigest()[:16]
-    return get_remote_address(request)
-
-
-limiter = Limiter(key_func=_rate_limit_key)
+limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger("legal-rag-api")
 
@@ -66,16 +49,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-def require_api_key(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-) -> None:
-    """Reject requests without a valid API key when keys are configured."""
-    if not API_KEYS:
-        return  # auth disabled
-    if credentials is None or credentials.credentials not in API_KEYS:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 
 # ---------------------------------------------------------------------------
@@ -259,7 +232,7 @@ async def health_check():
     return {"status": "online", "message": "Legal RAG API is running"}
 
 
-@app.post("/ask", response_model=AskResponse, dependencies=[Depends(require_api_key)])
+@app.post("/ask", response_model=AskResponse)
 @limiter.limit(RATE_LIMIT)
 def ask_question(request: Request, req: AskRequest, response: Response):
     request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
@@ -301,13 +274,13 @@ def ask_question(request: Request, req: AskRequest, response: Response):
         raise _http_error_for(e)
 
 
-@app.get("/sessions", response_model=List[SessionSummary], dependencies=[Depends(require_api_key)])
+@app.get("/sessions", response_model=List[SessionSummary])
 def list_sessions():
     """All sessions, most recently active first (for the sidebar)."""
     return sessions.list_all()
 
 
-@app.post("/sessions", dependencies=[Depends(require_api_key)])
+@app.post("/sessions")
 def create_session():
     """Create a new, empty chat thread (active in parallel with existing ones)."""
     session_id = str(uuid.uuid4())
@@ -315,7 +288,7 @@ def create_session():
     return {"session_id": session_id}
 
 
-@app.get("/sessions/{session_id}", response_model=SessionDetail, dependencies=[Depends(require_api_key)])
+@app.get("/sessions/{session_id}", response_model=SessionDetail)
 def get_session(session_id: str):
     """Full message history for one thread (to re-render the chat on switch)."""
     history = sessions.get(session_id)
@@ -330,7 +303,7 @@ def get_session(session_id: str):
     }
 
 
-@app.delete("/sessions/{session_id}", status_code=204, dependencies=[Depends(require_api_key)])
+@app.delete("/sessions/{session_id}", status_code=204)
 def delete_session(session_id: str):
     if not sessions.delete(session_id):
         raise HTTPException(status_code=404, detail="Session not found")

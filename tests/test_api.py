@@ -1,16 +1,12 @@
-import os
 import pytest
 from fastapi.testclient import TestClient
 from langchain_core.messages import HumanMessage, AIMessage
 
 import api
 
-REAL_KEY = "test-key-1"
-
 
 @pytest.fixture()
-def client(monkeypatch):
-    monkeypatch.setattr(api, "API_KEYS", {REAL_KEY})
+def client():
     with TestClient(api.app) as c:
         yield c
 
@@ -43,26 +39,8 @@ def test_static_site_served(client):
     assert "MotorLegal" in resp.text or "chat" in resp.text.lower()
 
 
-def test_ask_requires_auth(client, canned_answer):
+def test_ask_returns_answer(client, canned_answer):
     resp = client.post("/ask", json={"question": "What is a fine?"})
-    assert resp.status_code == 401
-
-
-def test_ask_wrong_key(client, canned_answer):
-    resp = client.post(
-        "/ask",
-        json={"question": "What is a fine?"},
-        headers={"Authorization": "Bearer wrong-key"},
-    )
-    assert resp.status_code == 401
-
-
-def test_ask_with_key(client, canned_answer):
-    resp = client.post(
-        "/ask",
-        json={"question": "What is a fine?"},
-        headers={"Authorization": f"Bearer {REAL_KEY}"},
-    )
     assert resp.status_code == 200
     body = resp.json()
     assert body["answer"] == "Mocked answer with [Page 1]."
@@ -73,36 +51,24 @@ def test_ask_request_id_echo(client, canned_answer):
     resp = client.post(
         "/ask",
         json={"question": "hi"},
-        headers={"Authorization": f"Bearer {REAL_KEY}", "X-Request-ID": "test-abc-123"},
+        headers={"X-Request-ID": "test-abc-123"},
     )
     assert resp.status_code == 200
     assert resp.headers.get("X-Request-ID") == "test-abc-123"
 
 
 def test_ask_blank_question(client):
-    resp = client.post(
-        "/ask",
-        json={"question": "   "},
-        headers={"Authorization": f"Bearer {REAL_KEY}"},
-    )
+    resp = client.post("/ask", json={"question": "   "})
     assert resp.status_code == 422
 
 
 def test_ask_missing_question(client):
-    resp = client.post(
-        "/ask",
-        json={},
-        headers={"Authorization": f"Bearer {REAL_KEY}"},
-    )
+    resp = client.post("/ask", json={})
     assert resp.status_code == 422
 
 
 def test_ask_overlong_question(client):
-    resp = client.post(
-        "/ask",
-        json={"question": "x" * 501},
-        headers={"Authorization": f"Bearer {REAL_KEY}"},
-    )
+    resp = client.post("/ask", json={"question": "x" * 501})
     assert resp.status_code == 422
 
 
@@ -118,49 +84,38 @@ def test_session_history_persists(client, monkeypatch):
         return {"answer": "ok", "context": [], "scores": {"max_relevance": 1.0}}
 
     monkeypatch.setattr(api, "query_rag", fake_query_rag)
-    headers = {"Authorization": f"Bearer {REAL_KEY}"}
 
-    r1 = client.post("/ask", json={"question": "first"}, headers=headers).json()
+    r1 = client.post("/ask", json={"question": "first"}).json()
     sid = r1["session_id"]
-    r2 = client.post("/ask", json={"question": "second", "session_id": sid}, headers=headers)
+    r2 = client.post("/ask", json={"question": "second", "session_id": sid})
     assert r2.status_code == 200
     assert seen == [0, 2]
 
 
-def test_sessions_require_auth(client, canned_answer):
-    assert client.post("/sessions").status_code == 401
-    assert client.get("/sessions").status_code == 401
-    assert client.get("/sessions/abc").status_code == 401
-    assert client.delete("/sessions/abc").status_code == 401
-
-
 def test_sessions_crud(client, canned_answer):
-    headers = {"Authorization": f"Bearer {REAL_KEY}"}
-
-    created = client.post("/sessions", headers=headers).json()
+    created = client.post("/sessions").json()
     sid = created["session_id"]
     assert sid
 
-    listed = client.get("/sessions", headers=headers).json()
+    listed = client.get("/sessions").json()
     assert any(s["session_id"] == sid for s in listed)
 
-    client.post("/ask", json={"question": "first", "session_id": sid}, headers=headers)
+    client.post("/ask", json={"question": "first", "session_id": sid})
 
-    detail = client.get(f"/sessions/{sid}", headers=headers)
+    detail = client.get(f"/sessions/{sid}")
     assert detail.status_code == 200
     msgs = detail.json()["messages"]
     assert len(msgs) == 2
     assert msgs[0]["role"] == "human"
     assert msgs[0]["content"] == "first"
 
-    listed = client.get("/sessions", headers=headers).json()
+    listed = client.get("/sessions").json()
     entry = next(s for s in listed if s["session_id"] == sid)
     assert entry["title"] == "first"
 
-    assert client.delete(f"/sessions/{sid}", headers=headers).status_code == 204
-    assert client.get(f"/sessions/{sid}", headers=headers).status_code == 404
+    assert client.delete(f"/sessions/{sid}").status_code == 204
+    assert client.get(f"/sessions/{sid}").status_code == 404
 
 
 def test_sessions_delete_missing(client):
-    headers = {"Authorization": f"Bearer {REAL_KEY}"}
-    assert client.delete("/sessions/does-not-exist", headers=headers).status_code == 404
+    assert client.delete("/sessions/does-not-exist").status_code == 404
