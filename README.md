@@ -167,6 +167,8 @@ docker run -p 8000:8000 `
 ```
 
 > Populate the index first: `python ingest.py --reset` (locally or from any container with the keys).
+> The image bakes the embedding + reranker weights in at build time, so cold starts
+> don't re-download ~180MB of models (pass `HF_TOKEN` as a build-time arg for faster pulls).
 
 ---
 

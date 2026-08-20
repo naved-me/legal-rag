@@ -5,6 +5,7 @@ import sqlite3
 import threading
 import time
 import uuid
+from contextlib import asynccontextmanager
 from typing import List, Optional
 
 from dotenv import load_dotenv
@@ -31,6 +32,26 @@ SESSION_DB = os.getenv("SESSION_DB", "sessions.db")
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 
 
+def _warm_up():
+    """Load models + BM25 index at startup so the first user request isn't the
+    one doing heavy work (model load, Pinecone enumeration). Errors are logged
+    but don't crash the app — the request path retries them anyway."""
+    import chat as chat_mod
+    try:
+        chat_mod._embeddings()
+        chat_mod._reranker()
+        chat_mod._bm25_index()
+        logger.info("Model warm-up complete (embeddings, reranker, BM25)")
+    except Exception as e:
+        logger.error("Model warm-up failed: %s", e)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    _warm_up()
+    yield
+
+
 limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger("legal-rag-api")
@@ -39,6 +60,7 @@ app = FastAPI(
     title="Motor Legal Chatbot API",
     description="An API to ask questions about Motor Laws using RAG.",
     version="1.2.0",
+    lifespan=lifespan,
 )
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
