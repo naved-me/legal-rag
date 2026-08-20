@@ -170,6 +170,37 @@ docker run -p 8000:8000 `
 
 ---
 
+## Deploy on Render (PaaS)
+
+The production service runs the same Docker image, so this is just wiring up the container.
+
+1. **Push the code** — Render builds from GitHub, so commit and push `main` first.
+2. **Create the service** — [render.com](https://render.com) → **New → Web Service** → connect the
+   `legal-rag` repo → branch `main`. Render auto-detects the `Dockerfile`; no build command needed.
+   Pick a region near your users; the **Free** plan works (it spins down when idle).
+3. **Environment variables**:
+
+   | Key | Value |
+   |---|---|
+   | `GROQ_API_KEY` | `gsk_...` |
+   | `PINECONE_API_KEY` | `pcsk_...` |
+   | `PINECONE_INDEX_NAME` | `legal-rag` |
+   | `SESSION_DB` | `/data/sessions.db` |
+   | `ALLOWED_ORIGINS` | `https://legal-rag.onrender.com` |
+   | `HF_TOKEN` | `hf_...` (optional — faster HF model downloads) |
+
+4. **Persistent disk** — service settings → **Disks** → add a disk mounted at `/data`. This keeps chat
+   histories in SQLite across deploys.
+5. **Health check** — set the health check path to `/health`.
+6. **Test** — open the service URL; the first request is slow (cold start + HF model downloads + BM25
+   index build), subsequent ones are fast.
+
+**Production guardrails are already baked in**: proxy-header IP tracking, 20 req/min per-IP rate limit
+(JSON 429), a 1,000-char input cap, a 1,500-word context budget, and automatic failover to an 8B model.
+See *Production Guardrails & Cost Mitigation* below.
+
+---
+
 ## Evaluation Results
 
 Run the harness yourself for current numbers; representative output on the included sample:
