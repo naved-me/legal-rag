@@ -1,8 +1,6 @@
 pypdf==6.16.1
 langchain-core==1.5.5
 langchain-text-splitters==1.1.2
-langchain-chroma==1.1.0
-chromadb==1.5.9
 langchain-huggingface==1.2.2
 langchain-pinecone==0.2.13
 pinecone-client==6.0.0

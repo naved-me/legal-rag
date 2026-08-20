@@ -16,7 +16,6 @@ from pydantic import BaseModel
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "legal-rag")
 PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", "384"))  # all-MiniLM-L6-v2
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 LLM_MODEL = os.getenv("LLM_MODEL", "qwen/qwen3.6-27b")
 NUM_QUESTIONS = int(os.getenv("NUM_QUESTIONS", "15"))
 
