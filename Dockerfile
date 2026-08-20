@@ -12,9 +12,12 @@ ENV HF_TOKEN=$HF_TOKEN
 
 # Bake the embedding + reranker weights into the image so cold starts on
 # free-tier PaaS don't download ~180MB at request time (which times out).
+# snapshot_download only streams files to disk (no weight loading), so the
+# build stays well under the 512MB free-tier memory cap. Loading happens once
+# at startup via the api.py warm-up.
 # Pass HF_TOKEN as a Render build-time env var for authenticated (faster) pulls.
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')" \
- && python -c "from sentence_transformers import CrossEncoder; CrossEncoder('cross-encoder/ms-marco-MiniLM-L6-v2')"
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('sentence-transformers/all-MiniLM-L6-v2')" \
+ && python -c "from huggingface_hub import snapshot_download; snapshot_download('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 
 EXPOSE 8000
 
