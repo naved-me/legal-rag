@@ -24,7 +24,7 @@ Motor Vehicles Act from your PDF, with **grounded, page-cited answers** and a fu
 │  client   │ ───────► chat.py ────────┴───────────┘
 │ (browser/ │           hybrid candidates (25) → RRF fusion
 │  API)     │              → cross-encoder re-rank → confidence gate
-└─────┬─────┘                 → top-6 context + history → Groq LLM
+└─────┬─────┘                 → top-3 context + history → Groq LLM
       │                       → answer with [Page N] citations
       └─────────────────────────────▲
               api.py (FastAPI): rate limit, SQLite sessions, CORS, X-Request-ID
@@ -151,58 +151,6 @@ All optional — sensible defaults shown.
 
 ---
 
-## Deployment (Docker)
-
-Vectors live in the cloud index, so containers are stateless — no index data to persist, just keys.
-
-```powershell
-# Build
-docker build -t legal-rag .
-
-# Run (mount sessions.db so chat history survives restarts)
-docker run -p 8000:8000 `
-  -v ${PWD}/sessions.db:/app/sessions.db `
-  --env-file .env `
-  legal-rag
-```
-
-> Populate the index first: `python ingest.py --reset` (locally or from any container with the keys).
-> The image bakes the embedding + reranker weights in at build time, so cold starts
-> don't re-download ~180MB of models (pass `HF_TOKEN` as a build-time arg for faster pulls).
-
----
-
-## Deploy on Render (PaaS)
-
-The production service runs the same Docker image, so this is just wiring up the container.
-
-1. **Push the code** — Render builds from GitHub, so commit and push `main` first.
-2. **Create the service** — [render.com](https://render.com) → **New → Web Service** → connect the
-   `legal-rag` repo → branch `main`. Render auto-detects the `Dockerfile`; no build command needed.
-   Pick a region near your users; the **Free** plan works (it spins down when idle).
-3. **Environment variables**:
-
-   | Key | Value |
-   |---|---|
-   | `GROQ_API_KEY` | `gsk_...` |
-   | `PINECONE_API_KEY` | `pcsk_...` |
-   | `PINECONE_INDEX_NAME` | `legal-rag` |
-   | `SESSION_DB` | `/data/sessions.db` |
-   | `ALLOWED_ORIGINS` | `https://legal-rag.onrender.com` |
-   | `HF_TOKEN` | `hf_...` (optional — faster HF model downloads) |
-
-4. **Persistent disk** — service settings → **Disks** → add a disk mounted at `/data`. This keeps chat
-   histories in SQLite across deploys.
-5. **Health check** — set the health check path to `/health`.
-6. **Test** — open the service URL; the first request is slow (cold start + HF model downloads + BM25
-   index build), subsequent ones are fast.
-
-**Production guardrails are already baked in**: proxy-header IP tracking, 20 req/min per-IP rate limit
-(JSON 429), a 1,000-char input cap, a 1,500-word context budget, and automatic failover to an 8B model.
-See *Production Guardrails & Cost Mitigation* below.
-
----
-
 ## Evaluation Results
 
 Run the harness yourself for current numbers; representative output on the included sample:
@@ -232,7 +180,6 @@ you change chunking, retrieval, or thresholds.
 ├── benchmark.json       Generated test set
 ├── tests/               Pytest suite (mocks LLM calls; deterministic logic tested hard)
 ├── static/              Web UI (vanilla JS, XSS-sanitized)
-├── Dockerfile           Stateless container
 └── requirements.txt     Pinned dependencies
 ```
 
@@ -246,29 +193,25 @@ you change chunking, retrieval, or thresholds.
 
 ---
 
-## Production Guardrails & Cost Mitigation
+## Guardrails & Cost Mitigation
 
-This project is built to run as an **unauthenticated, zero-friction demo** while staying safe against
-API abuse and token exhaustion on a shared cloud host. The layout was chosen deliberately:
+The app runs as an **unauthenticated, zero-friction demo** while staying safe against API abuse and
+token exhaustion on a shared/limited quota:
 
-- **Proxy-Trust Client Tracking (Phase 1):** the server is started with
-  `--proxy-headers --forwarded-allow-ips "*"` so it reads `X-Forwarded-For` from the cloud load
-  balancer. Without this, every visitor would look like the same IP and rate limiting would be useless.
-- **Edge-Guard Rate Limiting (Phase 2):** the `/ask` endpoint is limited to **20 requests/minute per
-  real client IP** (SlowAPI). The 21st request in a minute gets a clean `429 Too Many Requests` JSON
-  response. This protects the shared Groq quota from any single user or bot.
-- **Token-Aware UI Constraints (Phase 3):** the chat input enforces a **1,000-character cap**. If a user
-  pastes a huge document, the Send button freezes and a notice explains the demo cap — stopping a single
-  click from wiping out the minute's token budget. The API enforces the same limit server-side as a backstop.
-- **Defensive Context Ingestion (Phase 4):** retrieval returns at most **3 chunks** (`RETRIEVAL_K=3`) and
-  the prompt builder enforces a hard **1,500-word context budget** (`CONTEXT_MAX_WORDS`), trimming excess
+- **Rate Limiting:** the `/ask` endpoint is limited to **20 requests/minute per IP** (SlowAPI). The 21st
+  request in a minute gets a clean `429 Too Many Requests` JSON response. This protects the shared Groq
+  quota from any single user or bot.
+- **Token-Aware UI Constraints:** the chat input enforces a **1,000-character cap**. If a user pastes a
+  huge document, the Send button freezes and a notice explains the demo cap — stopping a single click
+  from wiping out the minute's token budget. The API enforces the same limit server-side as a backstop.
+- **Defensive Context Ingestion:** retrieval returns at most **3 chunks** (`RETRIEVAL_K=3`) and the
+  prompt builder enforces a hard **1,500-word context budget** (`CONTEXT_MAX_WORDS`), trimming excess
   text before the call. This keeps every payload safely under the model's Tokens-Per-Minute limit.
-- **High-Availability Failover (Phase 5):** every Groq call is wrapped in `_invoke_fallback()`. If the
-  primary model errors (429 quota, 5xx outage), the request is **immediately refired on a lighter 8B
-  fallback model** (`FALLBACK_MODEL`, with its own separate quota). Users almost never see an error screen.
+- **High-Availability Failover:** every Groq call is wrapped in `_invoke_fallback()`. If the primary
+  model errors (429 quota, 5xx outage), the request is **immediately refired on a lighter 8B fallback
+  model** (`FALLBACK_MODEL`, with its own separate quota). Users almost never see an error screen.
 
-These guardrails trade a little context depth for dramatically lower cost and high uptime — the right
-balance for a public demo that must never go blank.
+These guardrails trade a little context depth for dramatically lower cost and high uptime.
 
 ---
 
