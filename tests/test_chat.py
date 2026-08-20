@@ -93,3 +93,45 @@ def test_query_rag_refine_noop_still_refuses(monkeypatch):
 
     res = chat.query_rag("whats up", api_mode=True)
     assert "not find information" in res["answer"]
+
+
+def test_invoke_fallback_swaps_model(monkeypatch):
+    calls = []
+
+    def fake_invoke(chain, inputs, retries=2, backoff=10.0):
+        calls.append(chain)
+        if len(calls) == 1:
+            raise RuntimeError("primary boom")
+        return "ok"
+
+    monkeypatch.setattr(chat, "_invoke", fake_invoke)
+
+    def build(model):
+        return f"chain:{model}"
+
+    res = chat._invoke_fallback(build, {})
+    assert res == "ok"
+    assert calls == [f"chain:{chat.LLM_MODEL}", f"chain:{chat.FALLBACK_MODEL}"]
+
+
+def test_invoke_fallback_reraises_primary(monkeypatch):
+    def fake_invoke(chain, inputs, retries=2, backoff=10.0):
+        raise ValueError("primary")
+
+    monkeypatch.setattr(chat, "_invoke", fake_invoke)
+
+    with pytest.raises(ValueError):
+        chat._invoke_fallback(lambda m: m, {})
+
+
+def test_format_context_respects_word_budget(monkeypatch):
+    monkeypatch.setattr(chat, "CONTEXT_MAX_WORDS", 10)
+    docs = [
+        _doc(1),
+        Document(page_content="one two three four five six seven eight nine ten eleven",
+                 metadata={"page": 2, "chunk_id": "c2"}),
+    ]
+    out = chat._format_context(docs)
+    assert "Page 1" in out
+    # second chunk present but trimmed to the remaining 9 words
+    assert "eleven" not in out

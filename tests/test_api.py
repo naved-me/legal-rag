@@ -68,7 +68,7 @@ def test_ask_missing_question(client):
 
 
 def test_ask_overlong_question(client):
-    resp = client.post("/ask", json={"question": "x" * 501})
+    resp = client.post("/ask", json={"question": "x" * 1001})
     assert resp.status_code == 422
 
 

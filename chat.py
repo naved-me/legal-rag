@@ -27,7 +27,12 @@ PINECONE_REGION = os.getenv("PINECONE_REGION", "us-east-1")
 PINECONE_DIMENSION = int(os.getenv("PINECONE_DIMENSION", "384"))  # all-MiniLM-L6-v2
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 LLM_MODEL = os.getenv("LLM_MODEL", "qwen/qwen3.6-27b")
-RETRIEVAL_K = int(os.getenv("RETRIEVAL_K", "6"))
+# Fallback model for high-availability failover (Phase 5): a lighter 8B-class
+# model with its own Groq TPD quota, so the app survives 429s/outages.
+FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "llama-3.1-8b-instant")
+RETRIEVAL_K = int(os.getenv("RETRIEVAL_K", "3"))
+# Hard context budget: keep the final prompt payload small (Phase 4).
+CONTEXT_MAX_WORDS = int(os.getenv("CONTEXT_MAX_WORDS", "1500"))
 RERANK_MODEL = os.getenv("RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 RERANK_FETCH_K = int(os.getenv("RERANK_FETCH_K", "25"))
 RERANK_MIN_SCORE = float(os.getenv("RERANK_MIN_SCORE", "-1.0"))
@@ -66,11 +71,12 @@ def _reranker():
         return None
 
 
-def _llm():
-    kwargs = {"model": LLM_MODEL, "temperature": 0}
+def _llm(model: str = None):
+    model = model or LLM_MODEL
+    kwargs = {"model": model, "temperature": 0}
     # qwen is a reasoning model that leaks its chain-of-thought inline.
     # Turn reasoning off at the API level to keep answers clean and fast.
-    if "qwen" in LLM_MODEL:
+    if "qwen" in model.lower():
         kwargs["reasoning_effort"] = "none"
     return ChatGroq(**kwargs)
 
@@ -91,6 +97,19 @@ def _invoke(chain, inputs, retries=2, backoff=10.0):
                 time.sleep(backoff * (attempt + 1))
                 continue
             raise
+
+
+def _invoke_fallback(build_chain, inputs, retries=2, backoff=10.0):
+    """Run a chain built for the primary model; on ANY error, refire once on
+    the lighter fallback model (Phase 5 failover). If the fallback also fails,
+    re-raise the primary error so the API maps it honestly."""
+    try:
+        return _invoke(build_chain(LLM_MODEL), inputs, retries, backoff)
+    except Exception as primary_error:
+        try:
+            return _invoke(build_chain(FALLBACK_MODEL), inputs, 1, 5.0)
+        except Exception:
+            raise primary_error
 
 
 def strip_thinking(text: str) -> str:
@@ -236,20 +255,24 @@ def _rank_context(question: str):
 def _rewrite_question(question: str, history: list) -> str:
     if not history:
         return question
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", (
-            "Given a chat history and the latest user question, "
-            "formulate a standalone question which can be understood without the chat history. "
-            "Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
-        )),
-        ("system", "Chat history:\n{history_text}"),
-        ("human", "{input}"),
-    ])
+
+    def build(model):
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", (
+                "Given a chat history and the latest user question, "
+                "formulate a standalone question which can be understood without the chat history. "
+                "Do NOT answer the question, just reformulate it if needed and otherwise return it as is."
+            )),
+            ("system", "Chat history:\n{history_text}"),
+            ("human", "{input}"),
+        ])
+        return prompt | _llm(model) | StrOutputParser()
+
     history_text = "\n".join(
         f"{'User' if isinstance(m, HumanMessage) else 'Assistant'}: {m.content}"
         for m in history[-6:]
     )
-    result = _invoke(prompt | _llm() | StrOutputParser(), {
+    result = _invoke_fallback(build, {
         "history_text": history_text,
         "input": question,
     }).strip()
@@ -273,19 +296,37 @@ def _refine_query(question: str) -> str:
         )),
         ("human", "{input}"),
     ])
+
+    def build(model):
+        return prompt | _llm(model) | StrOutputParser()
+
     try:
-        result = _invoke(prompt | _llm() | StrOutputParser(), {"input": question}).strip()
+        result = _invoke_fallback(build, {"input": question}).strip()
         return result if result else question
     except Exception:
         return question
 
 
 def _format_context(documents: list) -> str:
-    """Prefix each chunk with its source page so the LLM can cite it inline."""
+    """Prefix each chunk with its source page so the LLM can cite it inline.
+
+    Enforces CONTEXT_MAX_WORDS: chunks are added in relevance order until the
+    budget is full, then the last chunk is trimmed. Keeps the final prompt
+    safely under the model's token limit (Phase 4)."""
     parts = []
+    used = 0
     for doc in documents:
         page = doc.metadata.get("page", "?")
-        parts.append(f"[Page {page}]\n{doc.page_content}")
+        text = doc.page_content
+        words = len(text.split())
+        if used + words > CONTEXT_MAX_WORDS:
+            budget = CONTEXT_MAX_WORDS - used
+            if budget > 0:
+                trimmed = " ".join(text.split()[:budget])
+                parts.append(f"[Page {page}]\n{trimmed}")
+            break
+        parts.append(f"[Page {page}]\n{text}")
+        used += words
     return "\n\n".join(parts)
 
 
@@ -300,11 +341,15 @@ def _answer(question: str, documents: list, history: list) -> str:
         "If the answer is not in the context, just say that you don't know."
         "\n\nContext:\n{context}"
     )
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt.replace("{context}", _format_context(documents))),
-        ("human", "{input}"),
-    ])
-    return _invoke(prompt | _llm() | StrOutputParser() | strip_thinking, {"input": question})
+
+    def build(model):
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt.replace("{context}", _format_context(documents))),
+            ("human", "{input}"),
+        ])
+        return prompt | _llm(model) | StrOutputParser() | strip_thinking
+
+    return _invoke_fallback(build, {"input": question})
 
 
 REFUSAL = (

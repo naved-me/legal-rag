@@ -83,6 +83,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Token-aware input cap: freeze Send + show a notice when over 1000 chars.
+    const MAX_QUESTION_CHARS = 1000;
+    const charNotice = document.getElementById('char-notice');
+    userInput.addEventListener('input', () => {
+        const over = userInput.value.length > MAX_QUESTION_CHARS;
+        if (over) {
+            sendBtn.disabled = true;
+            charNotice.classList.remove('hidden');
+        } else {
+            charNotice.classList.add('hidden');
+            // only re-enable if we're not mid-request (submit handler manages that)
+            if (!sendBtn.dataset.busy) sendBtn.disabled = false;
+        }
+    });
+
     function renderSessions(list, activeId) {
         sessionListEl.innerHTML = '';
         if (!list || list.length === 0) {
@@ -198,6 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Clear input & disable button
         userInput.value = '';
         sendBtn.disabled = true;
+        sendBtn.dataset.busy = '1';
+        charNotice.classList.add('hidden');
 
         // 3. Show loading indicator
         showLoading();
@@ -237,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addMessage('Sorry, I encountered an error connecting to the server. Is the FastAPI backend running?', false);
         } finally {
             // Re-enable input
+            delete sendBtn.dataset.busy;
             sendBtn.disabled = false;
             userInput.focus();
         }

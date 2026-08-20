@@ -375,3 +375,14 @@ body {
     color: #94a3b8;
     cursor: not-allowed;
 }
+
+.char-notice {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #f87171;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}

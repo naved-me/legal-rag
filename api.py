@@ -56,7 +56,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 class AskRequest(BaseModel):
-    question: str = Field(..., min_length=1, max_length=500)
+    question: str = Field(..., min_length=1, max_length=1000)
     session_id: Optional[str] = Field(None, max_length=64)
 
     @field_validator("question")

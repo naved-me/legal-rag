@@ -133,7 +133,9 @@ All optional — sensible defaults shown.
 | `PDF_PATH` | `motor_laws_sample.pdf` | Source document |
 | `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Local embedding model |
 | `LLM_MODEL` | `qwen/qwen3.6-27b` | Answer model (Groq) |
-| `RETRIEVAL_K` | `6` | Chunks passed to the LLM |
+| `RETRIEVAL_K` | `3` | Chunks passed to the LLM (kept small for cost) |
+| `CONTEXT_MAX_WORDS` | `1500` | Hard word budget for the prompt context |
+| `FALLBACK_MODEL` | `llama-3.1-8b-instant` | Light model used when the primary LLM fails |
 | `RERANK_FETCH_K` | `25` | Candidates before re-ranking |
 | `RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder re-ranker |
 | `RERANK_MIN_SCORE` | `-1.0` | Re-ranker gate for context entry |
@@ -174,8 +176,8 @@ Run the harness yourself for current numbers; representative output on the inclu
 
 ```
 Answer accuracy (LLM-judged):   15/15 (100%)
-Retrieval hit-rate@6:           15/15 (100%)
-Retrieval MRR@6:                0.822
+Retrieval hit-rate@3:           15/15 (100%)
+Retrieval MRR@3:                0.822
 Refused (out-of-scope):          0/15
 ```
 
@@ -208,6 +210,32 @@ you change chunking, retrieval, or thresholds.
 - Keys live only in `.env` (gitignored) — never commit them.
 - All rendered text is sanitized client-side (XSS protection).
 - Set `ALLOWED_ORIGINS` to your frontend domain before exposing publicly.
+
+---
+
+## Production Guardrails & Cost Mitigation
+
+This project is built to run as an **unauthenticated, zero-friction demo** while staying safe against
+API abuse and token exhaustion on a shared cloud host. The layout was chosen deliberately:
+
+- **Proxy-Trust Client Tracking (Phase 1):** the server is started with
+  `--proxy-headers --forwarded-allow-ips "*"` so it reads `X-Forwarded-For` from the cloud load
+  balancer. Without this, every visitor would look like the same IP and rate limiting would be useless.
+- **Edge-Guard Rate Limiting (Phase 2):** the `/ask` endpoint is limited to **20 requests/minute per
+  real client IP** (SlowAPI). The 21st request in a minute gets a clean `429 Too Many Requests` JSON
+  response. This protects the shared Groq quota from any single user or bot.
+- **Token-Aware UI Constraints (Phase 3):** the chat input enforces a **1,000-character cap**. If a user
+  pastes a huge document, the Send button freezes and a notice explains the demo cap — stopping a single
+  click from wiping out the minute's token budget. The API enforces the same limit server-side as a backstop.
+- **Defensive Context Ingestion (Phase 4):** retrieval returns at most **3 chunks** (`RETRIEVAL_K=3`) and
+  the prompt builder enforces a hard **1,500-word context budget** (`CONTEXT_MAX_WORDS`), trimming excess
+  text before the call. This keeps every payload safely under the model's Tokens-Per-Minute limit.
+- **High-Availability Failover (Phase 5):** every Groq call is wrapped in `_invoke_fallback()`. If the
+  primary model errors (429 quota, 5xx outage), the request is **immediately refired on a lighter 8B
+  fallback model** (`FALLBACK_MODEL`, with its own separate quota). Users almost never see an error screen.
+
+These guardrails trade a little context depth for dramatically lower cost and high uptime — the right
+balance for a public demo that must never go blank.
 
 ---
 
